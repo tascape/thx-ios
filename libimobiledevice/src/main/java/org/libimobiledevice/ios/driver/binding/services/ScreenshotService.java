@@ -73,7 +73,7 @@ public class ScreenshotService {
         byte[] raw = takeScreenshotAsTiff();
 
         TiffImageParser parser = new TiffImageParser();
-        BufferedImage image = parser.getBufferedImage(raw, new HashMap<String, Object>());
+        BufferedImage image = parser.getBufferedImage(raw, new HashMap<>());
         File f = new File("screen.png");
         //System.out.println("loading :\t" + (System.currentTimeMillis() - start) + " ms");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -83,7 +83,11 @@ public class ScreenshotService {
     }
 
     /**
-     * a screenshot in PNG format.
+     * Gets a screenshot in PNG format.
+     *
+     * @return byte array
+     *
+     * @throws SDKException any issue
      */
     public byte[] takeScreenshot() throws SDKException {
         try {

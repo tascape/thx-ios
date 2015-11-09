@@ -366,7 +366,7 @@ public class ImobiledeviceSdkLibrary implements Library {
      * @param callback  callback
      * @param user_data data
      *
-     * @return
+     * @return int
      */
     public static native int sdk_idevice_event_subscribe(ImobiledeviceSdkLibrary.sdk_idevice_event_cb_t callback,
         Pointer user_data);
@@ -417,7 +417,7 @@ public class ImobiledeviceSdkLibrary implements Library {
      * <code>sdk_idevice_error_t information_service_get_device_name(sdk_idevice_information_service_t, char**)</code>
      *
      * @param service     service
-     * @param device_name
+     * @param device_name string
      *
      * @return int
      */
@@ -817,6 +817,7 @@ public class ImobiledeviceSdkLibrary implements Library {
      * Original signature :
      * <code>sdk_idevice_error_t app_container_service_new(sdk_idevice_t, sdk_idevice_app_container_service_t*)</code>
      *
+     * @param device  device
      * @param service service
      *
      * @return int

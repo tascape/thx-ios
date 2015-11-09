@@ -44,6 +44,10 @@ public class SysLogService {
 
     /**
      * add an additional listener to syslog. Start the service on the first listener.
+     *
+     * @param listener callback
+     *
+     * @throws SDKException any issue
      */
     public void addListener(SysLogListener listener) throws SDKException {
 
