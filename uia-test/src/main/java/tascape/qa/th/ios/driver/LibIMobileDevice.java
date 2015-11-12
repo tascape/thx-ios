@@ -111,6 +111,10 @@ public class LibIMobileDevice extends EntityDriver {
             informationService.isDevModeEnabled());
     }
 
+    public IOSDevice getIosDevice() {
+        return iosDevice;
+    }
+
     @Override
     public String getName() {
         return LibIMobileDevice.class.getSimpleName();
@@ -161,8 +165,7 @@ public class LibIMobileDevice extends EntityDriver {
         SystemConfiguration.getInstance();
         Map<String, LibIMobileDevice> devices = LibIMobileDevice.getAllDevices();
         LibIMobileDevice device = devices.values().iterator().next();
-        String id = device.getInstallerService().getApplication("com.bcgdv.haoyun")
-            .getApplicationId();
+        String id = device.getInstallerService().getApplication("com.bcgdv.haoyun").getApplicationId();
         LOG.debug(id);
         device.getDebugService().launch(id);
     }
