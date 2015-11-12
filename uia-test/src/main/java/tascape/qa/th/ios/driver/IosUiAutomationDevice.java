@@ -15,6 +15,7 @@
  */
 package tascape.qa.th.ios.driver;
 
+import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,4 +26,7 @@ import org.slf4j.LoggerFactory;
 public class IosUiAutomationDevice extends LibIMobileDevice {
     private static final Logger LOG = LoggerFactory.getLogger(IosUiAutomationDevice.class);
 
+    public IosUiAutomationDevice(String udid) throws SDKException {
+        super(udid);
+    }
 }
