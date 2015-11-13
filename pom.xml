@@ -11,6 +11,7 @@
 
     <modules>
         <module>libimobiledevice</module>
+        <module>nailgun-server</module>
         <module>uia-test</module>
     </modules>
 
