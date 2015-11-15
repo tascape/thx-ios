@@ -17,11 +17,11 @@ package com.tascape.qa.th.ios.driver;
 
 import com.tascape.qa.th.SystemConfiguration;
 import com.tascape.qa.th.driver.EntityDriver;
+import com.tascape.qa.th.exception.EntityDriverException;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.imaging.ImageReadException;
 import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
@@ -72,15 +72,15 @@ public class LibIMobileDevice extends EntityDriver {
 
     private final WebInspectorService webInspectorService;
 
-    public static Map<String, LibIMobileDevice> getAllDevices() throws SDKException, InterruptedException {
-        Map<String, LibIMobileDevice> devices = new HashMap<>();
-
+    public static List<String> getAllUuids() throws SDKException, InterruptedException {
+        LOG.info("Detecting attached devices");
+        List<String> uuids = new ArrayList<>();
         new DeviceService().startDetection(new DeviceCallBack() {
             @Override
             protected void onDeviceAdded(String uuid) {
-                LOG.debug("{}", uuid);
+                LOG.info("uuid {}", uuid);
                 try {
-                    devices.put(uuid, new LibIMobileDevice(uuid));
+                    uuids.add(uuid);
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -88,13 +88,11 @@ public class LibIMobileDevice extends EntityDriver {
 
             @Override
             protected void onDeviceRemoved(String uuid) {
-                devices.remove(uuid);
+                uuids.remove(uuid);
             }
         });
-
-        LOG.debug("detecting attached devices");
         Thread.sleep(5000);
-        return devices;
+        return uuids;
     }
 
     public LibIMobileDevice(String udid) throws SDKException {
@@ -122,12 +120,25 @@ public class LibIMobileDevice extends EntityDriver {
 
     @Override
     public String getName() {
-        return LibIMobileDevice.class.getSimpleName();
+        try {
+            return String.format("%s, %s, %s",
+                informationService.getDeviceName(),
+                informationService.getDeviceType(),
+                informationService.getProductVersion());
+        } catch (SDKException ex) {
+            return LibIMobileDevice.class.getName();
+        }
     }
 
     @Override
     public void reset() throws Exception {
         LOG.debug("NA");
+    }
+
+    public void launchApp(String bundleId) throws SDKException {
+        String id = installerService.getApplication("com.bcgdv.haoyun").getApplicationId();
+        LOG.debug("app id " + id);
+        debugService.launch(id);
     }
 
     public AppContainerService getAppContainerService() {
@@ -171,18 +182,23 @@ public class LibIMobileDevice extends EntityDriver {
             .map(app -> app.getApplicationId()).collect(Collectors.toList());
     }
 
-    public void takeDeviceScreenshot() throws SDKException, ImageReadException, IOException {
-        File png = this.getLogPath().resolve("ss-" + System.currentTimeMillis() + ".png").toFile();
-        png.mkdirs();
-        png.createNewFile();
-        this.screenshotService.takeScreenshot(png);
-        LOG.debug("Save screenshot to {}", png.getAbsolutePath());
+    public File takeDeviceScreenshot() throws EntityDriverException {
+        try {
+            File png = this.getLogPath().resolve("ss-" + System.currentTimeMillis() + ".png").toFile();
+            png.mkdirs();
+            png.createNewFile();
+            this.screenshotService.takeScreenshot(png);
+            LOG.debug("Save screenshot to {}", png.getAbsolutePath());
+            return png;
+        } catch (IOException | SDKException | ImageReadException ex) {
+            throw new EntityDriverException(ex);
+        }
     }
 
     public static void main(String[] args) throws Exception {
         SystemConfiguration.getInstance();
-        Map<String, LibIMobileDevice> devices = LibIMobileDevice.getAllDevices();
-        LibIMobileDevice device = devices.values().iterator().next();
+        List<String> uuids = LibIMobileDevice.getAllUuids();
+        LibIMobileDevice device = new LibIMobileDevice(uuids.get(0));
         String id = device.getInstallerService().getApplication("com.bcgdv.haoyun").getApplicationId();
         LOG.debug(id);
         device.getDebugService().launch(id);

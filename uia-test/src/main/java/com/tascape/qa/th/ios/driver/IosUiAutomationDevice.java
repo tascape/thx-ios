@@ -38,6 +38,7 @@ import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Server;
 import com.tascape.qa.th.ios.comm.JavaScriptNail;
 import com.tascape.qa.th.libx.DefaultExecutor;
+import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.SynchronousQueue;
@@ -57,9 +58,11 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
 
     private final SynchronousQueue<String> jsQueue = new SynchronousQueue<>();
 
-    private NGServer ngs;
+    private NGServer ngServer;
 
-    private Server server;
+    private Server rmiServer;
+
+    private ExecuteWatchdog instrumentsDog;
 
     private final InstrumentsStreamHandler instrumentsStreamHandler = new InstrumentsStreamHandler();
 
@@ -68,15 +71,32 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
     }
 
     public void start() throws IOException, InterruptedException, LipeRMIException {
-        this.startNailGunServer();
-        this.startRmiServer();
-        this.setupInstrumentsServer();
-        Utils.sleep(2000, "wait for server");
+        LOG.info("Start servers");
+        ngServer = this.startNailGunServer();
+        rmiServer = this.startRmiServer();
+        instrumentsDog = this.setupInstrumentsServer();
     }
 
     public void stop() {
-        server.close();
-        ngs.shutdown(false);
+        LOG.info("Stop servers");
+        if (ngServer != null) {
+            ngServer.shutdown(false);
+        }
+        if (rmiServer != null) {
+            rmiServer.close();
+        }
+        if (instrumentsDog != null) {
+            instrumentsDog.stop();
+            instrumentsDog.killedProcess();
+        }
+    }
+
+    public void delay(int second) throws InterruptedException {
+        this.sendJavaScript("target.delay(" + second + ")");
+    }
+
+    public void logElementTree() throws InterruptedException {
+        this.sendJavaScript("window.logElementTree();");
     }
 
     public String getAppName() {
@@ -87,34 +107,35 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         this.appName = appName;
     }
 
-    public void setJavaScript(String javaScript) throws InterruptedException {
+    public void sendJavaScript(String javaScript) throws InterruptedException {
         LOG.trace("sending js {}", javaScript);
         jsQueue.put(javaScript);
         jsQueue.put("UIALogger.logDebug('');");
     }
 
     @Override
-    public String getJavaScript() throws InterruptedException {
+    public String retrieveJavaScript() throws InterruptedException {
         String js = jsQueue.take();
         LOG.trace("got js {}", js);
         return js;
     }
 
-    private void startNailGunServer() throws InterruptedException {
-        ngs = new NGServer(null, 0);
+    private NGServer startNailGunServer() throws InterruptedException {
+        NGServer ngs = new NGServer(null, 0);
         new Thread(ngs).start();
         Utils.sleep(2000, "");
         this.ngPort = ngs.getPort();
         LOG.debug("ng port {}", this.ngPort);
+        return ngs;
     }
 
-    private void startRmiServer() throws IOException, LipeRMIException {
-        server = new Server();
+    private Server startRmiServer() throws IOException, LipeRMIException {
+        Server rmis = new Server();
         CallHandler callHandler = new CallHandler();
         this.rmiPort = 8000;
         while (true) {
             try {
-                server.bind(rmiPort, callHandler);
+                rmis.bind(rmiPort, callHandler);
                 break;
             } catch (IOException ex) {
                 LOG.trace("port {} - {}", this.rmiPort, ex.getMessage());
@@ -123,14 +144,10 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         }
         LOG.debug("rmi port {}", this.rmiPort);
         callHandler.registerGlobal(JavaScriptServer.class, this);
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                server.close();
-            }
-        });
+        return rmis;
     }
 
-    private void setupInstrumentsServer() throws IOException, InterruptedException {
+    private ExecuteWatchdog setupInstrumentsServer() throws IOException, InterruptedException {
         StringBuilder sb = new StringBuilder()
             .append("while (1) {\n")
             .append("  var target = UIATarget.localTarget();\n")
@@ -150,10 +167,10 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         File js = File.createTempFile("instruments-", ".js");
         FileUtils.write(js, sb);
         LOG.debug("{}\n{}", js, sb);
-        this.runServer(js);
+        return runInstrumentsServer(js);
     }
 
-    private ExecuteWatchdog runServer(File javascript) throws IOException {
+    private ExecuteWatchdog runInstrumentsServer(File javascript) throws IOException {
         CommandLine cmdLine = new CommandLine("instruments");
         cmdLine.addArgument("-t");
         cmdLine.addArgument("/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns"
@@ -166,7 +183,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         cmdLine.addArgument(javascript.getAbsolutePath());
         cmdLine.addArgument("-e");
         cmdLine.addArgument("UIARESULTSPATH");
-        cmdLine.addArgument(System.getProperty("user.home"));
+        cmdLine.addArgument(Paths.get(System.getProperty("user.home"), "instruments").toFile().getAbsolutePath());
         LOG.debug("{}", cmdLine.toString());
         ExecuteWatchdog watchdog = new ExecuteWatchdog(Long.MAX_VALUE);
         Executor executor = new DefaultExecutor();
@@ -235,7 +252,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         d.start();
 
         for (int y = 200; y < 600; y++) {
-            d.setJavaScript("target.tap({x:222, y:" + y + "})");
+            d.sendJavaScript("target.tap({x:222, y:" + y + "})");
         }
         d.stop();
     }

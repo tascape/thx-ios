@@ -38,7 +38,7 @@ public class JavaScriptNail {
         CallHandler callHandler = new CallHandler();
         Client client = new Client("localhost", port, callHandler);
         JavaScriptServer jss = JavaScriptServer.class.cast(client.getGlobal(JavaScriptServer.class));
-        String js = jss.getJavaScript();
+        String js = jss.retrieveJavaScript();
         System.out.println(js);
     }
 }

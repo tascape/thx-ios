@@ -21,5 +21,5 @@ package com.tascape.qa.th.ios.comm;
  */
 public interface JavaScriptServer {
 
-    String getJavaScript() throws InterruptedException;
+    String retrieveJavaScript() throws InterruptedException;
 }
