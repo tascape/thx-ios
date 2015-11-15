@@ -5,11 +5,11 @@
     <parent>
         <groupId>com.tascape.qa</groupId>
         <artifactId>thx-ios</artifactId>
-        <version>1.0.0</version>  
+        <version>1.0.1</version>  
     </parent>
     <groupId>com.tascape.qa</groupId>
     <artifactId>thx-ios-nailgun</artifactId>
-    <version>1.0.0</version>  
+    <version>1.0.1</version>  
     <packaging>jar</packaging>
 
     <name>thx-ios-nailgun</name>

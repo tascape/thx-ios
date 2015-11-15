@@ -23,10 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
-import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteStreamHandler;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
@@ -34,12 +32,14 @@ import org.apache.commons.io.FileUtils;
 import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.martiansoftware.nailgun.NGServer;
 import net.sf.lipermi.exception.LipeRMIException;
 import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Server;
 import com.tascape.qa.th.ios.comm.JavaScriptNail;
+import com.tascape.qa.th.libx.DefaultExecutor;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.concurrent.SynchronousQueue;
 
 /**
@@ -57,15 +57,26 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
 
     private final SynchronousQueue<String> jsQueue = new SynchronousQueue<>();
 
+    private NGServer ngs;
+
+    private Server server;
+
+    private final InstrumentsStreamHandler instrumentsStreamHandler = new InstrumentsStreamHandler();
+
     public IosUiAutomationDevice(String udid) throws SDKException, IOException {
         super(udid);
     }
 
-    public void init() throws IOException, InterruptedException, LipeRMIException {
+    public void start() throws IOException, InterruptedException, LipeRMIException {
         this.startNailGunServer();
         this.startRmiServer();
         this.setupInstrumentsServer();
         Utils.sleep(2000, "wait for server");
+    }
+
+    public void stop() {
+        server.close();
+        ngs.shutdown(false);
     }
 
     public String getAppName() {
@@ -77,29 +88,28 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
     }
 
     public void setJavaScript(String javaScript) throws InterruptedException {
+        LOG.trace("sending js {}", javaScript);
         jsQueue.put(javaScript);
+        jsQueue.put("UIALogger.logDebug('');");
     }
 
     @Override
     public String getJavaScript() throws InterruptedException {
-        return jsQueue.take();
+        String js = jsQueue.take();
+        LOG.trace("got js {}", js);
+        return js;
     }
 
     private void startNailGunServer() throws InterruptedException {
-        NGServer ngs = new NGServer(null, 0);
+        ngs = new NGServer(null, 0);
         new Thread(ngs).start();
         Utils.sleep(2000, "");
         this.ngPort = ngs.getPort();
         LOG.debug("ng port {}", this.ngPort);
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                ngs.shutdown(false);
-            }
-        });
     }
 
     private void startRmiServer() throws IOException, LipeRMIException {
-        Server server = new Server();
+        server = new Server();
         CallHandler callHandler = new CallHandler();
         this.rmiPort = 8000;
         while (true) {
@@ -107,7 +117,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
                 server.bind(rmiPort, callHandler);
                 break;
             } catch (IOException ex) {
-                LOG.warn("port {} - {}", this.rmiPort, ex.getMessage());
+                LOG.trace("port {} - {}", this.rmiPort, ex.getMessage());
                 this.rmiPort += 7;
             }
         }
@@ -122,22 +132,21 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
 
     private void setupInstrumentsServer() throws IOException, InterruptedException {
         StringBuilder sb = new StringBuilder()
-            .append("while (1) {").append("\n")
-            .append("  var target = UIATarget.localTarget();").append("\n")
-            .append("  var host = target.host();").append("\n")
-            .append("  var app = target.frontMostApp();").append("\n")
-            .append("  var window = app.mainWindow();").append("\n")
+            .append("while (1) {\n")
+            .append("  var target = UIATarget.localTarget();\n")
+            .append("  var host = target.host();\n")
+            .append("  var app = target.frontMostApp();\n")
+            .append("  var window = app.mainWindow();\n")
             .append("  var js = host.performTaskWithPathArgumentsTimeout('").append(JavaScriptNail.NG_CLIENT)
-            .append("', [").append("'--nailgun-port', '").append(ngPort).append("', '")
-            .append(JavaScriptNail.class.getName()).append("', '").append(rmiPort).append("'], 10000);").append("\n")
-            .append("  UIALogger.logDebug('request ' + js.stdout);").append("\n")
-            .append("  try {").append("\n")
-            .append("    var res = eval(js.stdout);").append("\n")
-            .append("    UIALogger.logDebug(res);").append("\n")
-            .append("  } catch(err) {").append("\n")
-            .append("    UIALogger.logError(err);").append("\n")
-            .append("  }").append("\n")
-            .append("}");
+            .append("', ['--nailgun-port', '").append(ngPort).append("', '")
+            .append(JavaScriptNail.class.getName()).append("', '").append(rmiPort).append("'], 10000);\n")
+            .append("  UIALogger.logDebug(js.stdout);\n")
+            .append("  try {\n")
+            .append("    var res = eval(js.stdout);\n")
+            .append("  } catch(err) {\n")
+            .append("    UIALogger.logError(err);\n")
+            .append("  }\n")
+            .append("}\n");
         File js = File.createTempFile("instruments-", ".js");
         FileUtils.write(js, sb);
         LOG.debug("{}\n{}", js, sb);
@@ -162,18 +171,16 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         ExecuteWatchdog watchdog = new ExecuteWatchdog(Long.MAX_VALUE);
         Executor executor = new DefaultExecutor();
         executor.setWatchdog(watchdog);
-        executor.setStreamHandler(new InstrumentsStreamToFileHandler(null));
+        executor.setStreamHandler(this.instrumentsStreamHandler);
         executor.execute(cmdLine, new DefaultExecuteResultHandler());
         return watchdog;
     }
 
-    private class InstrumentsStreamToFileHandler implements ExecuteStreamHandler {
-        File output;
+    public void addInstrumentsStreamObserver(Observer observer) {
+        this.instrumentsStreamHandler.addObserver(observer);
+    }
 
-        InstrumentsStreamToFileHandler(File output) {
-            this.output = output;
-        }
-
+    private class InstrumentsStreamHandler extends Observable implements ExecuteStreamHandler {
         @Override
         public void setProcessInputStream(OutputStream out) throws IOException {
             LOG.trace("setProcessInputStream");
@@ -188,32 +195,20 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
                     break;
                 }
                 LOG.error(line);
+                this.notifyObserversX("ERROR " + line);
             } while (true);
         }
 
         @Override
         public void setProcessOutputStream(InputStream in) throws IOException {
             BufferedReader bis = new BufferedReader(new InputStreamReader(in));
-            if (this.output == null) {
-                while (true) {
-                    String line = bis.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    LOG.debug(line);
+            while (true) {
+                String line = bis.readLine();
+                if (line == null) {
+                    break;
                 }
-
-            } else {
-                PrintWriter pw = new PrintWriter(this.output);
-                LOG.debug("Log stdout to {}", this.output);
-                while (true) {
-                    String line = bis.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    pw.println(line);
-                    pw.flush();
-                }
+                LOG.debug(line);
+                this.notifyObserversX(line);
             }
         }
 
@@ -226,16 +221,22 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         public void stop() {
             LOG.trace("stop");
         }
+
+        private void notifyObserversX(String line) {
+            this.setChanged();
+            this.notifyObservers(line);
+            this.clearChanged();
+        }
     }
 
     public static void main(String[] args) throws Exception {
         IosUiAutomationDevice d = new IosUiAutomationDevice("c73cd94b20897033b6462e1afef9531b524085c3");
         d.setAppName("Xinkaishi");
-        d.init();
+        d.start();
 
-        int y = 200;
-        for (int i = 0; i < 400; i++) {
-            d.setJavaScript("target.tap({x:222, y:" + y++ + "})");
+        for (int y = 200; y < 600; y++) {
+            d.setJavaScript("target.tap({x:222, y:" + y + "})");
         }
+        d.stop();
     }
 }

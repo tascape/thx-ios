@@ -17,8 +17,13 @@ package com.tascape.qa.th.ios.driver;
 
 import com.tascape.qa.th.SystemConfiguration;
 import com.tascape.qa.th.driver.EntityDriver;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import org.apache.commons.imaging.ImageReadException;
 import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
 import org.libimobiledevice.ios.driver.binding.raw.JNAInit;
 import org.libimobiledevice.ios.driver.binding.services.AppContainerService;
@@ -159,6 +164,19 @@ public class LibIMobileDevice extends EntityDriver {
 
     public WebInspectorService getWebInspectorService() {
         return webInspectorService;
+    }
+
+    public List<String> getApps() throws SDKException {
+        return installerService.listApplications(InstallerService.ApplicationType.USER).stream()
+            .map(app -> app.getApplicationId()).collect(Collectors.toList());
+    }
+
+    public void takeDeviceScreenshot() throws SDKException, ImageReadException, IOException {
+        File png = this.getLogPath().resolve("ss-" + System.currentTimeMillis() + ".png").toFile();
+        png.mkdirs();
+        png.createNewFile();
+        this.screenshotService.takeScreenshot(png);
+        LOG.debug("Save screenshot to {}", png.getAbsolutePath());
     }
 
     public static void main(String[] args) throws Exception {

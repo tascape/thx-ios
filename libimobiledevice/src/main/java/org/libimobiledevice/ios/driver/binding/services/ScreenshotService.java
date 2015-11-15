@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.LongBuffer;
 import java.util.HashMap;
 import javax.imageio.ImageIO;
+import org.apache.commons.imaging.formats.png.PngImageParser;
 import static org.libimobiledevice.ios.driver.binding.exceptions.SDKErrorCode.throwIfNeeded;
 import static org.libimobiledevice.ios.driver.binding.raw.ImobiledeviceSdkLibrary.screenshot_service_free;
 import static org.libimobiledevice.ios.driver.binding.raw.ImobiledeviceSdkLibrary.screenshot_service_new;
@@ -75,7 +76,6 @@ public class ScreenshotService {
         TiffImageParser parser = new TiffImageParser();
         BufferedImage image = parser.getBufferedImage(raw, new HashMap<>());
         File f = new File("screen.png");
-        //System.out.println("loading :\t" + (System.currentTimeMillis() - start) + " ms");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ImageIO.write(image, "png", out);
         out.flush();
@@ -92,8 +92,24 @@ public class ScreenshotService {
     public byte[] takeScreenshot() throws SDKException {
         try {
             return getPNGAsString();
-        } catch (Exception e) {
+        } catch (SDKException | ImageReadException | IOException e) {
             throw new SDKException("Cannot take a screenshot : " + e.getMessage());
         }
+    }
+
+    /**
+     * Gets a screenshot in PNG format.
+     *
+     * @param png file path
+     *
+     * @throws SDKException       any issue
+     * @throws ImageReadException any issue
+     * @throws IOException        any issue
+     */
+    public void takeScreenshot(File png) throws SDKException, ImageReadException, IOException {
+        byte[] raw = takeScreenshotAsTiff();
+        PngImageParser parser = new PngImageParser();
+        BufferedImage image = parser.getBufferedImage(raw, new HashMap<>());
+        ImageIO.write(image, "png", png);
     }
 }
