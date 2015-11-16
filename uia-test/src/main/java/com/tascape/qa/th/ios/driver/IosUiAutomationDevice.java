@@ -33,30 +33,38 @@ import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.martiansoftware.nailgun.NGServer;
+import com.tascape.qa.th.exception.EntityDriverException;
 import net.sf.lipermi.exception.LipeRMIException;
 import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Server;
 import com.tascape.qa.th.ios.comm.JavaScriptNail;
 import com.tascape.qa.th.libx.DefaultExecutor;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
 /**
  *
  * @author linsong wang
  */
-public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScriptServer {
+public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScriptServer, Observer {
     private static final Logger LOG = LoggerFactory.getLogger(IosUiAutomationDevice.class);
+
+    public static final String FAIL = "Fail: The target application appears to have died";
+
+    private final SynchronousQueue<String> javaScriptQueue = new SynchronousQueue<>();
+
+    private final BlockingQueue<String> responseQueue = new ArrayBlockingQueue<>(5000);
 
     private int ngPort;
 
     private int rmiPort;
-
-    private String appName = "APP_NAME";
-
-    private final SynchronousQueue<String> jsQueue = new SynchronousQueue<>();
 
     private NGServer ngServer;
 
@@ -64,17 +72,18 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
 
     private ExecuteWatchdog instrumentsDog;
 
-    private final InstrumentsStreamHandler instrumentsStreamHandler = new InstrumentsStreamHandler();
+    private InstrumentsStreamHandler instrumentsStreamHandler;
 
-    public IosUiAutomationDevice(String udid) throws SDKException, IOException {
-        super(udid);
+    public IosUiAutomationDevice(String uuid) throws SDKException, IOException {
+        super(uuid);
     }
 
-    public void start() throws IOException, InterruptedException, LipeRMIException {
+    public void start(String appName) throws IOException, InterruptedException, LipeRMIException {
         LOG.info("Start servers");
         ngServer = this.startNailGunServer();
         rmiServer = this.startRmiServer();
-        instrumentsDog = this.setupInstrumentsServer();
+        instrumentsDog = this.startInstrumentsServer(appName);
+        addInstrumentsStreamObserver(this);
     }
 
     public void stop() {
@@ -91,33 +100,72 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         }
     }
 
-    public void delay(int second) throws InterruptedException {
+    public void delay(int second) throws InterruptedException, EntityDriverException {
         this.sendJavaScript("target.delay(" + second + ")");
     }
 
-    public void logElementTree() throws InterruptedException {
-        this.sendJavaScript("window.logElementTree();");
+    public List<String> logElementTree() throws InterruptedException, EntityDriverException {
+        return this.sendJavaScript("window.logElementTree();");
     }
 
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public void sendJavaScript(String javaScript) throws InterruptedException {
+    public List<String> sendJavaScript(String javaScript) throws InterruptedException, EntityDriverException {
+        String reqId = UUID.randomUUID().toString();
         LOG.trace("sending js {}", javaScript);
-        jsQueue.put(javaScript);
-        jsQueue.put("UIALogger.logDebug('');");
+        javaScriptQueue.put("UIALogger.logMessage('" + reqId + " start');" + javaScript);
+        javaScriptQueue.put("UIALogger.logMessage('" + reqId + " stop');");
+        while (true) {
+            String res = this.responseQueue.take();
+            LOG.trace(res);
+            if (res.contains(FAIL)) {
+                throw new EntityDriverException(res);
+            }
+            if (res.contains(reqId + " start")) {
+                break;
+            }
+        }
+        List<String> lines = new ArrayList<>();
+        while (true) {
+            String res = this.responseQueue.take();
+            LOG.trace(res);
+            if (res.contains(FAIL)) {
+                throw new EntityDriverException(res);
+            }
+            if (res.contains(reqId + " start")) {
+                continue;
+            }
+            if (res.contains(reqId + " stop")) {
+                break;
+            } else {
+                lines.add(res);
+            }
+        }
+        javaScriptQueue.clear();
+        return lines;
     }
 
     @Override
     public String retrieveJavaScript() throws InterruptedException {
-        String js = jsQueue.take();
+        String js = javaScriptQueue.take();
         LOG.trace("got js {}", js);
         return js;
+    }
+
+    public boolean addInstrumentsStreamObserver(Observer observer) {
+        if (this.instrumentsStreamHandler != null) {
+            this.instrumentsStreamHandler.addObserver(observer);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        String res = arg.toString();
+        try {
+            responseQueue.put(res);
+        } catch (InterruptedException ex) {
+            LOG.error("Cannot save instruments response");
+        }
     }
 
     private NGServer startNailGunServer() throws InterruptedException {
@@ -138,7 +186,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
                 rmis.bind(rmiPort, callHandler);
                 break;
             } catch (IOException ex) {
-                LOG.trace("port {} - {}", this.rmiPort, ex.getMessage());
+                LOG.trace("rmi port {} - {}", this.rmiPort, ex.getMessage());
                 this.rmiPort += 7;
             }
         }
@@ -147,7 +195,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         return rmis;
     }
 
-    private ExecuteWatchdog setupInstrumentsServer() throws IOException, InterruptedException {
+    private ExecuteWatchdog startInstrumentsServer(String appName) throws IOException {
         StringBuilder sb = new StringBuilder()
             .append("while (1) {\n")
             .append("  var target = UIATarget.localTarget();\n")
@@ -167,10 +215,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         File js = File.createTempFile("instruments-", ".js");
         FileUtils.write(js, sb);
         LOG.debug("{}\n{}", js, sb);
-        return runInstrumentsServer(js);
-    }
 
-    private ExecuteWatchdog runInstrumentsServer(File javascript) throws IOException {
         CommandLine cmdLine = new CommandLine("instruments");
         cmdLine.addArgument("-t");
         cmdLine.addArgument("/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns"
@@ -180,7 +225,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         cmdLine.addArgument(appName);
         cmdLine.addArgument("-e");
         cmdLine.addArgument("UIASCRIPT");
-        cmdLine.addArgument(javascript.getAbsolutePath());
+        cmdLine.addArgument(js.getAbsolutePath());
         cmdLine.addArgument("-e");
         cmdLine.addArgument("UIARESULTSPATH");
         cmdLine.addArgument(Paths.get(System.getProperty("user.home"), "instruments").toFile().getAbsolutePath());
@@ -188,13 +233,11 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         ExecuteWatchdog watchdog = new ExecuteWatchdog(Long.MAX_VALUE);
         Executor executor = new DefaultExecutor();
         executor.setWatchdog(watchdog);
-        executor.setStreamHandler(this.instrumentsStreamHandler);
+        instrumentsStreamHandler = new InstrumentsStreamHandler();
+        instrumentsStreamHandler.addObserver(this);
+        executor.setStreamHandler(instrumentsStreamHandler);
         executor.execute(cmdLine, new DefaultExecuteResultHandler());
         return watchdog;
-    }
-
-    public void addInstrumentsStreamObserver(Observer observer) {
-        this.instrumentsStreamHandler.addObserver(observer);
     }
 
     private class InstrumentsStreamHandler extends Observable implements ExecuteStreamHandler {
@@ -248,8 +291,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
 
     public static void main(String[] args) throws Exception {
         IosUiAutomationDevice d = new IosUiAutomationDevice("c73cd94b20897033b6462e1afef9531b524085c3");
-        d.setAppName("Xinkaishi");
-        d.start();
+        d.start("Xinkaishi");
 
         for (int y = 200; y < 600; y++) {
             d.sendJavaScript("target.tap({x:222, y:" + y + "})");

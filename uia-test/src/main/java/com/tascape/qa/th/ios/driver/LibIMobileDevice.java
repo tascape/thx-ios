@@ -19,12 +19,16 @@ import com.tascape.qa.th.SystemConfiguration;
 import com.tascape.qa.th.driver.EntityDriver;
 import com.tascape.qa.th.exception.EntityDriverException;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.imaging.ImageReadException;
 import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
+import org.libimobiledevice.ios.driver.binding.model.ApplicationInfo;
+import org.libimobiledevice.ios.driver.binding.model.ProvisioningProfileInfo;
 import org.libimobiledevice.ios.driver.binding.raw.JNAInit;
 import org.libimobiledevice.ios.driver.binding.services.AppContainerService;
 import org.libimobiledevice.ios.driver.binding.services.DebugService;
@@ -33,9 +37,12 @@ import org.libimobiledevice.ios.driver.binding.services.DeviceService;
 import org.libimobiledevice.ios.driver.binding.services.IOSDevice;
 import org.libimobiledevice.ios.driver.binding.services.ImageMountingService;
 import org.libimobiledevice.ios.driver.binding.services.InformationService;
+import org.libimobiledevice.ios.driver.binding.services.InstallCallback;
 import org.libimobiledevice.ios.driver.binding.services.InstallerService;
 import org.libimobiledevice.ios.driver.binding.services.ProvisioningService;
 import org.libimobiledevice.ios.driver.binding.services.ScreenshotService;
+import org.libimobiledevice.ios.driver.binding.services.SysLogLine;
+import org.libimobiledevice.ios.driver.binding.services.SysLogListener;
 import org.libimobiledevice.ios.driver.binding.services.SysLogService;
 import org.libimobiledevice.ios.driver.binding.services.WebInspectorService;
 import org.slf4j.Logger;
@@ -53,6 +60,8 @@ public class LibIMobileDevice extends EntityDriver {
     }
 
     private final IOSDevice iosDevice;
+
+    private SysLogListener sysLogListener;
 
     private final AppContainerService appContainerService;
 
@@ -135,14 +144,89 @@ public class LibIMobileDevice extends EntityDriver {
         LOG.debug("NA");
     }
 
-    public void launchApp(String bundleId) throws SDKException {
-        String id = installerService.getApplication("com.bcgdv.haoyun").getApplicationId();
-        LOG.debug("app id " + id);
-        debugService.launch(id);
+    public int launchApp(String bundleId) throws SDKException {
+        return debugService.launch(bundleId);
+    }
+
+    public void killApp(String bundleId) throws SDKException, IOException {
+        debugService.killApp(bundleId);
+    }
+
+    public void startSafari() throws IOException, SDKException {
+        debugService.startSafari();
+    }
+
+    public void stopSafari() {
+        debugService.stopSafari();
+    }
+
+    public void installApp(File ipa) throws SDKException {
+        installerService.install(ipa, new InstallCallback() {
+            @Override
+            protected void onUpdate(String operation, int percent, String message) {
+                LOG.debug("{} - {} - {}", operation, percent, message);
+            }
+        });
+    }
+
+    public void uninstallApp(String bundleId) throws SDKException {
+        installerService.uninstall(bundleId);
+    }
+
+    public void cleanApp(String bundleId) throws SDKException {
+        appContainerService.clean(bundleId);
+    }
+
+    public ApplicationInfo getApplicationInfo(String bundleId) throws SDKException {
+        return installerService.getApplication(bundleId);
+    }
+
+    public List<String> getApps() throws SDKException {
+        return installerService.listApplications(InstallerService.ApplicationType.USER).stream()
+            .map(app -> app.getApplicationId()).collect(Collectors.toList());
     }
 
     public AppContainerService getAppContainerService() {
         return appContainerService;
+    }
+
+    public void setLanguage(String language) throws SDKException {
+        informationService.setLanguage(language);
+    }
+
+    public void setLocale(String locale) throws SDKException {
+        informationService.setLocale(locale);
+    }
+
+    public List<ProvisioningProfileInfo> getProvisionProfiles() throws Exception {
+        return provisioningService.getProfiles();
+    }
+
+    public File takeDeviceScreenshot() throws EntityDriverException {
+        try {
+            File png = this.getLogPath().resolve("ss-" + System.currentTimeMillis() + ".png").toFile();
+            png.mkdirs();
+            png.createNewFile();
+            this.screenshotService.takeScreenshot(png);
+            LOG.debug("Save screenshot to {}", png.getAbsolutePath());
+            return png;
+        } catch (IOException | SDKException | ImageReadException ex) {
+            throw new EntityDriverException(ex);
+        }
+    }
+
+    public File startSysLog() throws IOException, SDKException {
+        File log = this.saveAsTempTextFile("syslog", "");
+        PrintWriter pw = new PrintWriter(new FileOutputStream(log));
+        sysLogListener = (SysLogLine line) -> {
+            pw.println(line.toString());
+        };
+        sysLogService.addListener(sysLogListener);
+        return log;
+    }
+
+    public void stopSysLog() {
+        sysLogService.remove(sysLogListener);
     }
 
     public DebugService getDebugService() {
@@ -177,30 +261,21 @@ public class LibIMobileDevice extends EntityDriver {
         return webInspectorService;
     }
 
-    public List<String> getApps() throws SDKException {
-        return installerService.listApplications(InstallerService.ApplicationType.USER).stream()
-            .map(app -> app.getApplicationId()).collect(Collectors.toList());
-    }
-
-    public File takeDeviceScreenshot() throws EntityDriverException {
-        try {
-            File png = this.getLogPath().resolve("ss-" + System.currentTimeMillis() + ".png").toFile();
-            png.mkdirs();
-            png.createNewFile();
-            this.screenshotService.takeScreenshot(png);
-            LOG.debug("Save screenshot to {}", png.getAbsolutePath());
-            return png;
-        } catch (IOException | SDKException | ImageReadException ex) {
-            throw new EntityDriverException(ex);
-        }
-    }
-
     public static void main(String[] args) throws Exception {
         SystemConfiguration.getInstance();
         List<String> uuids = LibIMobileDevice.getAllUuids();
         LibIMobileDevice device = new LibIMobileDevice(uuids.get(0));
-        String id = device.getInstallerService().getApplication("com.bcgdv.haoyun").getApplicationId();
-        LOG.debug(id);
-        device.getDebugService().launch(id);
+
+        String bid = "com.bcgdv.haoyun";
+        device.launchApp(bid);
+        Thread.sleep(10000);
+        try {
+            device.killApp(bid);
+            Thread.sleep(5000);
+
+        } finally {
+//            device.cleanApp(bid);
+            device.launchApp(bid);
+        }
     }
 }

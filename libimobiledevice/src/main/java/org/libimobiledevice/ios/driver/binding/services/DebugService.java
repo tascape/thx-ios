@@ -19,6 +19,7 @@ import org.libimobiledevice.ios.driver.binding.raw.JNAInit;
 import java.io.File;
 import java.io.IOException;
 import java.nio.IntBuffer;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -40,6 +41,8 @@ public class DebugService {
 
     private final String udid;
 
+    private final Map<String, Process> processMap = new HashMap<>();
+
     private Process safari;
 
     private final IOSDevice device;
@@ -60,8 +63,7 @@ public class DebugService {
         PointerByReference envt = new PointerByReference();
         PointerByReference args = new PointerByReference();
         IntBuffer pidptr = IntBuffer.allocate(1);
-        int res = debug_service_launch_application_by_bundle_identifier(service, bundleId, envt, args,
-            pidptr);
+        int res = debug_service_launch_application_by_bundle_identifier(service, bundleId, envt, args, pidptr);
         int pid = pidptr.get(0);
         return pid;
     }
@@ -106,5 +108,54 @@ public class DebugService {
             return;
         }
         safari.destroy();
+    }
+
+    public void killApp(String bundleId) throws IOException, SDKException {
+        try {
+            this.startApp(bundleId);
+        } finally {
+            this.stopApp(bundleId);
+        }
+    }
+
+    private void startApp(String bundleId) throws IOException, SDKException {
+        File exe = new File(JNAInit.getTemporaryJNAFolder(), "idevicedebug");
+
+        String cmd = exe.getAbsolutePath() + " --udid " + udid + " run " + bundleId;
+        String[] args = cmd.split(" ");
+        ProcessBuilder builder = new ProcessBuilder(args);
+        Map<String, String> env = builder.environment();
+        env.put("LD_LIBRARY_PATH", JNAInit.getTemporaryJNAFolder().getAbsolutePath());
+        builder.directory(JNAInit.getTemporaryJNAFolder());
+        Process process = builder.start();
+
+        device.getSysLogService().addListener((SysLogLine line) -> {
+            if (line != null && line.getMessage().contains("Start debugging " + bundleId)) {
+                try {
+                    lock.lock();
+                    c.signal();
+                } finally {
+                    lock.unlock();
+                }
+            }
+        });
+
+        try {
+            lock.lock();
+            c.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new SDKException("Cannot start " + bundleId);
+        } finally {
+            lock.unlock();
+        }
+        processMap.put(bundleId, process);
+    }
+
+    private void stopApp(String bundleId) {
+        Process process = processMap.get(bundleId);
+        if (process == null) {
+            return;
+        }
+        process.destroy();
     }
 }
