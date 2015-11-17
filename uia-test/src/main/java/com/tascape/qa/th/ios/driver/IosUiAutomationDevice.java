@@ -166,7 +166,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
     public <T extends UIAElement> boolean doesElementExist(String javaScript, Class<T> type, String text) throws
         InterruptedException, EntityDriverException {
         String js = "var e = " + javaScript + "\n" + "e.logElement()";
-        return sendJavaScript(javaScript).stream()
+        return sendJavaScript(js).stream()
             .filter(line -> line.contains(type.getSimpleName()))
             .filter(line -> StringUtils.isEmpty(text) ? true : line.contains(text))
             .findFirst().isPresent();
