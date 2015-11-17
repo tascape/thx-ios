@@ -38,6 +38,7 @@ import net.sf.lipermi.exception.LipeRMIException;
 import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Server;
 import com.tascape.qa.th.ios.comm.JavaScriptNail;
+import com.tascape.qa.th.ios.model.UIAElement;
 import com.tascape.qa.th.libx.DefaultExecutor;
 import java.awt.Dimension;
 import java.nio.file.Paths;
@@ -129,6 +130,46 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
 
     public List<String> logElementTree() throws InterruptedException, EntityDriverException {
         return this.sendJavaScript("window.logElementTree();");
+    }
+
+    /**
+     * Checks if an element exists on current UI, based on element type.
+     *
+     * @param <T>        sub-class of UIAElement
+     * @param javaScript such as "window.tabBars()['MainTabBar'].logElement();"
+     * @param type       type of uia element, such as UIATabBar
+     *
+     * @return true if element identified by javascript exists
+     *
+     * @throws InterruptedException  in case of any issue
+     * @throws EntityDriverException in case of any issue
+     */
+    public <T extends UIAElement> boolean doesElementExist(String javaScript, Class<T> type)
+        throws InterruptedException, EntityDriverException {
+        return doesElementExist(javaScript, type, null);
+    }
+
+    /**
+     * Checks if an element exists on current UI, based on element type and text.
+     *
+     * @param <T>        sub-class of UIAElement
+     * @param javaScript the javascript that uniquely identify the element, such as "window.tabBars()['MainTabBar'];",
+     *                   or "window.elements()[1].buttons()[0];"
+     * @param type       type of uia element, such as UIATabBar
+     * @param text       text of an element, such as "MainTabBar"
+     *
+     * @return true if element identified by javascript exists
+     *
+     * @throws InterruptedException  in case of any issue
+     * @throws EntityDriverException in case of any issue
+     */
+    public <T extends UIAElement> boolean doesElementExist(String javaScript, Class<T> type, String text) throws
+        InterruptedException, EntityDriverException {
+        String js = "var e = " + javaScript + "\n" + "e.logElement()";
+        return sendJavaScript(javaScript).stream()
+            .filter(line -> line.contains(type.getSimpleName()))
+            .filter(line -> StringUtils.isEmpty(text) ? true : line.contains(text))
+            .findFirst().isPresent();
     }
 
     public List<String> sendJavaScript(String javaScript) throws InterruptedException, EntityDriverException {
