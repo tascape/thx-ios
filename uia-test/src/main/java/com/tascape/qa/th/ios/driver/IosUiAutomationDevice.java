@@ -39,6 +39,7 @@ import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Server;
 import com.tascape.qa.th.ios.comm.JavaScriptNail;
 import com.tascape.qa.th.libx.DefaultExecutor;
+import java.awt.Dimension;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +49,7 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -104,6 +106,27 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         this.sendJavaScript("target.delay(" + second + ")");
     }
 
+    /**
+     * Gets the screen size in points.
+     * http://www.paintcodeapp.com/news/ultimate-guide-to-iphone-resolutions
+     *
+     * @return the screen size in points
+     *
+     * @throws InterruptedException  in case of any issue
+     * @throws EntityDriverException in case of any issue
+     */
+    public Dimension getDisplaySize() throws InterruptedException, EntityDriverException {
+        List<String> lines = this.sendJavaScript("window.logElement();");
+        Dimension dimension = new Dimension();
+        String line = lines.stream().filter((l) -> (l.startsWith("UIAWindow"))).findFirst().get();
+        if (StringUtils.isNotEmpty(line)) {
+            String s = line.split("\\{", 2)[1].replaceAll("\\{", "").replaceAll("\\}", "");
+            String[] ds = s.split(",");
+            dimension.setSize(Integer.parseInt(ds[2].trim()), Integer.parseInt(ds[3].trim()));
+        }
+        return dimension;
+    }
+
     public List<String> logElementTree() throws InterruptedException, EntityDriverException {
         return this.sendJavaScript("window.logElementTree();");
     }
@@ -111,7 +134,8 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
     public List<String> sendJavaScript(String javaScript) throws InterruptedException, EntityDriverException {
         String reqId = UUID.randomUUID().toString();
         LOG.trace("sending js {}", javaScript);
-        javaScriptQueue.put("UIALogger.logMessage('" + reqId + " start');" + javaScript);
+        javaScriptQueue.put("UIALogger.logMessage('" + reqId + " start');");
+        javaScriptQueue.put(javaScript);
         javaScriptQueue.put("UIALogger.logMessage('" + reqId + " stop');");
         while (true) {
             String res = this.responseQueue.take();
@@ -292,10 +316,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
     public static void main(String[] args) throws Exception {
         IosUiAutomationDevice d = new IosUiAutomationDevice("c73cd94b20897033b6462e1afef9531b524085c3");
         d.start("Xinkaishi");
-
-        for (int y = 200; y < 600; y++) {
-            d.sendJavaScript("target.tap({x:222, y:" + y + "})");
-        }
+        LOG.debug("{}", d.getDisplaySize());
         d.stop();
     }
 }

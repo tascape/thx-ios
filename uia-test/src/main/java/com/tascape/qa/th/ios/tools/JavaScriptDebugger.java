@@ -26,6 +26,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.BorderFactory;
@@ -138,7 +139,8 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
     }
 
     public void detectDevices() throws SDKException, InterruptedException {
-        ComboBoxModel<String> model = new DefaultComboBoxModel<>(LibIMobileDevice.getAllUuids().toArray(new String[0]));
+        List<String> uuids = LibIMobileDevice.getAllUuids();
+        ComboBoxModel<String> model = new DefaultComboBoxModel<>(uuids.toArray(new String[0]));
         jcbDevices.setModel(model);
         if (model.getSize() == 0) {
             JOptionPane.showMessageDialog(jSplitPane, "No attached iOS device found.");
@@ -167,6 +169,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
                 this.jtaResponse.setText("");
             }
         } catch (SDKException | IOException | InterruptedException | LipeRMIException | EntityDriverException ex) {
+            LOG.error("", ex);
             JOptionPane.showMessageDialog(jSplitPane, ex.getMessage());
         }
     }
@@ -217,9 +220,10 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
         }
         System.exit(0);
     }
+
     private void appendResponse(String res) {
         this.jtaResponse.append(res);
-        this.jtaResponse.append("\n");        
+        this.jtaResponse.append("\n");
     }
 
     public static void main(String[] args) throws Exception {
@@ -232,6 +236,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
         jf.setVisible(true);
         jf.addWindowListener(debugger);
         jf.setLocationRelativeTo(null);
+
         debugger.detectDevices();
     }
 }

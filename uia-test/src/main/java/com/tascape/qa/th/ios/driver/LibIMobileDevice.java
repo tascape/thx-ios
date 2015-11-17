@@ -181,6 +181,10 @@ public class LibIMobileDevice extends EntityDriver {
         return installerService.getApplication(bundleId);
     }
 
+    public String getAppVersion(String bundleId) throws SDKException {
+        return installerService.getApplication(bundleId).getProperty("CFBundleVersion") + "";
+    }
+
     public List<String> getApps() throws SDKException {
         return installerService.listApplications(InstallerService.ApplicationType.USER).stream()
             .map(app -> app.getApplicationId()).collect(Collectors.toList());
@@ -265,17 +269,8 @@ public class LibIMobileDevice extends EntityDriver {
         SystemConfiguration.getInstance();
         List<String> uuids = LibIMobileDevice.getAllUuids();
         LibIMobileDevice device = new LibIMobileDevice(uuids.get(0));
-
-        String bid = "com.bcgdv.haoyun";
-        device.launchApp(bid);
-        Thread.sleep(10000);
-        try {
-            device.killApp(bid);
-            Thread.sleep(5000);
-
-        } finally {
-//            device.cleanApp(bid);
-            device.launchApp(bid);
-        }
+        device.getInstallerService().listApplications(InstallerService.ApplicationType.USER).forEach(app -> {
+            LOG.debug("{} - {}", app.getApplicationId(), app.getProperty("CFBundleVersion"));
+        });
     }
 }
