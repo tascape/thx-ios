@@ -16,9 +16,14 @@
 package com.tascape.qa.th.ios.comm;
 
 import com.martiansoftware.nailgun.NGContext;
-import com.tascape.qa.th.SystemConfiguration;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Paths;
 import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Client;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -28,10 +33,30 @@ import org.slf4j.LoggerFactory;
 public class JavaScriptNail {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(JavaScriptNail.class);
 
-    public static final String SYSPROP_NG_CLIENT = "qa.th.comm.NG_CLIENT";
+    public static final String NG_CLIENT;
 
-    public static final String NG_CLIENT = SystemConfiguration.getInstance().getProperty(SYSPROP_NG_CLIENT,
-        "/usr/local/bin/ng");
+    static {
+        InputStream in = JavaScriptNail.class.getResourceAsStream("/ng");
+        File ng = Paths.get(System.getProperty("user.home")).resolve(System.currentTimeMillis() + "")
+            .resolve("ng").toFile();
+        try {
+            if (!(ng.getParentFile().mkdirs() && ng.createNewFile())) {
+                throw new RuntimeException("Cannot create ng client file " + ng);
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException("Cannot create ng client file", ex);
+        }
+        try {
+            IOUtils.copy(in, new FileOutputStream(ng));
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        if (!ng.setExecutable(true)) {
+            throw new RuntimeException("Cannot mark ng client executable " + ng);
+        }
+        ng.deleteOnExit();
+        NG_CLIENT = ng.getAbsolutePath();
+    }
 
     public static void nailMain(NGContext context) throws Exception {
         int port = Integer.parseInt(context.getArgs()[0]);
