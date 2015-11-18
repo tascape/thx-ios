@@ -170,5 +170,4 @@ public class SmartScroller implements AdjustmentListener {
         previousValue = value;
         previousMaximum = maximum;
     }
-
 }

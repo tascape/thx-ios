@@ -37,24 +37,25 @@ public class JavaScriptNail {
 
     static {
         InputStream in = JavaScriptNail.class.getResourceAsStream("/ng");
-        File ng = Paths.get(System.getProperty("user.home")).resolve(System.currentTimeMillis() + "")
+        File ng = Paths.get(System.getProperty("java.io.tmpdir")).resolve(System.currentTimeMillis() + "")
             .resolve("ng").toFile();
+        File parent = ng.getParentFile();
         try {
-            if (!(ng.getParentFile().mkdirs() && ng.createNewFile())) {
+            if (!(parent.mkdirs() && ng.createNewFile())) {
                 throw new RuntimeException("Cannot create ng client file " + ng);
             }
         } catch (IOException ex) {
-            throw new RuntimeException("Cannot create ng client file", ex);
+            throw new RuntimeException("Cannot create ng client file " + ng, ex);
         }
+        ng.deleteOnExit();
         try {
             IOUtils.copy(in, new FileOutputStream(ng));
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            throw new RuntimeException("Cannot copy ng client file", ex);
         }
         if (!ng.setExecutable(true)) {
             throw new RuntimeException("Cannot mark ng client executable " + ng);
         }
-        ng.deleteOnExit();
         NG_CLIENT = ng.getAbsolutePath();
     }
 

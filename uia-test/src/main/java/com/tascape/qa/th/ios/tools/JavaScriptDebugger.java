@@ -37,6 +37,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -62,7 +63,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
 
     private final JComboBox<String> jcbDevices = new JComboBox<>(new String[]{"detecting devices..."});
 
-    private final JTextField jtfApp = new JTextField("app name");
+    private final JTextField jtfApp = new JTextField();
 
     private final JButton jbLaunch = new JButton("Launch");
 
@@ -87,30 +88,45 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
         jSplitPane.setContinuousLayout(true);
         jSplitPane.setResizeWeight(1);
         {
-            JPanel jPanel = new JPanel(new BorderLayout());
-            jPanel.setPreferredSize(new Dimension(550, 600));
-            jPanel.setMinimumSize(new Dimension(550, 400));
-            jSplitPane.setRightComponent(jPanel);
+            JPanel jpRight = new JPanel(new BorderLayout());
+            jpRight.setPreferredSize(new Dimension(460, 600));
+            jpRight.setMinimumSize(new Dimension(380, 400));
+            jpRight.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 5));
+            jSplitPane.setRightComponent(jpRight);
+
             {
-                JPanel jp = new JPanel();
-                jPanel.add(jp, BorderLayout.PAGE_START);
-                jp.add(jcbDevices);
-                jp.add(jtfApp);
-                jtfApp.setText(appName);
-                jbLaunch.addActionListener(this);
-                jp.add(jbLaunch);
-                this.jbLaunch.setEnabled(false);
+                JPanel jpUuid = new JPanel();
+                jpRight.add(jpUuid, BorderLayout.PAGE_START);
+                jpUuid.setLayout(new BoxLayout(jpUuid, BoxLayout.LINE_AXIS));
+                jpUuid.add(new JLabel("Devices"));
+                jpUuid.add(jcbDevices);
             }
             {
                 JPanel jp = new JPanel(new BorderLayout());
-                jp.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
-                jPanel.add(jp, BorderLayout.CENTER);
+
+                JPanel jpApp = new JPanel();
+                jp.add(jpApp, BorderLayout.PAGE_START);
+                jpApp.setLayout(new BoxLayout(jpApp, BoxLayout.LINE_AXIS));
+//                jpApp.add(Box.createHorizontalGlue());
+                jpApp.add(new JLabel("App Name"));
+                jpApp.add(jtfApp);
+                if (StringUtils.isNotEmpty(appName)) {
+                    jtfApp.setText(appName);
+                }
+                jbLaunch.addActionListener(this);
+                jpApp.add(jbLaunch);
+                this.jbLaunch.setEnabled(false);
+
+                jpRight.add(jp, BorderLayout.CENTER);
                 JScrollPane jsp = new JScrollPane(jtaJavaScript);
                 jp.add(jsp, BorderLayout.CENTER);
                 jtaJavaScript.setBorder(BorderFactory.createLoweredBevelBorder());
+
                 JPanel jpSend = new JPanel();
                 jp.add(jpSend, BorderLayout.PAGE_END);
                 jpSend.setLayout(new BoxLayout(jpSend, BoxLayout.LINE_AXIS));
+                jpSend.add(jbClear);
+                jbClear.addActionListener(this);
                 jpSend.add(jbElementTree);
                 jbElementTree.addActionListener(this);
                 jpSend.add(Box.createHorizontalGlue());
@@ -121,20 +137,15 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
             }
         }
         {
-            JPanel jPanel = new JPanel(new BorderLayout());
-            jPanel.setPreferredSize(new Dimension(700, 600));
-            jPanel.setMinimumSize(new Dimension(600, 400));
-            jPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
-            this.jSplitPane.setLeftComponent(jPanel);
+            JPanel jpLeft = new JPanel(new BorderLayout());
+            jpLeft.setPreferredSize(new Dimension(800, 600));
+            jpLeft.setMinimumSize(new Dimension(600, 400));
+            jpLeft.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
+            jtaResponse.setEditable(false);
+            this.jSplitPane.setLeftComponent(jpLeft);
             JScrollPane jsp = new JScrollPane(jtaResponse);
             new SmartScroller(jsp);
-            jPanel.add(jsp, BorderLayout.CENTER);
-            JPanel jpClear = new JPanel();
-            jpClear.setLayout(new BoxLayout(jpClear, BoxLayout.LINE_AXIS));
-            jPanel.add(jpClear, BorderLayout.PAGE_END);
-            jpClear.add(Box.createHorizontalGlue());
-            jpClear.add(jbClear);
-            jbClear.addActionListener(this);
+            jpLeft.add(jsp, BorderLayout.CENTER);
         }
     }
 

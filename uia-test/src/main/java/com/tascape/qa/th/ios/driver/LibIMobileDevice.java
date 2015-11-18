@@ -29,7 +29,6 @@ import org.apache.commons.imaging.ImageReadException;
 import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
 import org.libimobiledevice.ios.driver.binding.model.ApplicationInfo;
 import org.libimobiledevice.ios.driver.binding.model.ProvisioningProfileInfo;
-import org.libimobiledevice.ios.driver.binding.raw.JNAInit;
 import org.libimobiledevice.ios.driver.binding.services.AppContainerService;
 import org.libimobiledevice.ios.driver.binding.services.DebugService;
 import org.libimobiledevice.ios.driver.binding.services.DeviceCallBack;
@@ -54,10 +53,6 @@ import org.slf4j.LoggerFactory;
  */
 public class LibIMobileDevice extends EntityDriver {
     private static final Logger LOG = LoggerFactory.getLogger(LibIMobileDevice.class);
-
-    static {
-        JNAInit.init();
-    }
 
     private final IOSDevice iosDevice;
 

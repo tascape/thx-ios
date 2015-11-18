@@ -16,6 +16,7 @@ package org.libimobiledevice.ios.driver.binding.services;
 import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
 import java.util.HashMap;
 import java.util.Map;
+import org.libimobiledevice.ios.driver.binding.raw.JNAInit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.libimobiledevice.ios.driver.binding.exceptions.SDKErrorCode.throwIfNeeded;
@@ -24,6 +25,10 @@ import static org.libimobiledevice.ios.driver.binding.raw.ImobiledeviceSdkLibrar
 
 public class DeviceService {
     private static final Logger LOG = LoggerFactory.getLogger(DeviceService.class);
+
+    static {
+        JNAInit.init();
+    }
 
     public static final DeviceService INSTANCE = new DeviceService();
 
