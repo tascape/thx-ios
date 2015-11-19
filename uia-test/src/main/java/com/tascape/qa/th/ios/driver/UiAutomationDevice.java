@@ -56,8 +56,8 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author linsong wang
  */
-public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScriptServer, Observer {
-    private static final Logger LOG = LoggerFactory.getLogger(IosUiAutomationDevice.class);
+public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptServer, Observer {
+    private static final Logger LOG = LoggerFactory.getLogger(UiAutomationDevice.class);
 
     public static final String FAIL = "Fail: The target application appears to have died";
 
@@ -78,9 +78,9 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
 
     private ExecuteWatchdog instrumentsDog;
 
-    private InstrumentsStreamHandler instrumentsStreamHandler;
+    private ESH instrumentsStreamHandler;
 
-    public IosUiAutomationDevice(String uuid) throws SDKException, IOException {
+    public UiAutomationDevice(String uuid) throws SDKException, IOException {
         super(uuid);
     }
 
@@ -300,14 +300,14 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         ExecuteWatchdog watchdog = new ExecuteWatchdog(Long.MAX_VALUE);
         Executor executor = new DefaultExecutor();
         executor.setWatchdog(watchdog);
-        instrumentsStreamHandler = new InstrumentsStreamHandler();
+        instrumentsStreamHandler = new ESH();
         instrumentsStreamHandler.addObserver(this);
         executor.setStreamHandler(instrumentsStreamHandler);
         executor.execute(cmdLine, new DefaultExecuteResultHandler());
         return watchdog;
     }
 
-    private class InstrumentsStreamHandler extends Observable implements ExecuteStreamHandler {
+    private class ESH extends Observable implements ExecuteStreamHandler {
         @Override
         public void setProcessInputStream(OutputStream out) throws IOException {
             LOG.trace("setProcessInputStream");
@@ -357,7 +357,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
     }
 
     public static void main(String[] args) throws Exception {
-        IosUiAutomationDevice d = new IosUiAutomationDevice("c73cd94b20897033b6462e1afef9531b524085c3");
+        UiAutomationDevice d = new UiAutomationDevice("c73cd94b20897033b6462e1afef9531b524085c3");
         d.start("Xinkaishi");
         LOG.debug("{}", d.getDisplaySize());
         d.stop();

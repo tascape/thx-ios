@@ -17,7 +17,7 @@ package com.tascape.qa.th.ios.tools;
 
 import com.tascape.qa.th.SystemConfiguration;
 import com.tascape.qa.th.exception.EntityDriverException;
-import com.tascape.qa.th.ios.driver.IosUiAutomationDevice;
+import com.tascape.qa.th.ios.driver.UiAutomationDevice;
 import com.tascape.qa.th.ios.driver.LibIMobileDevice;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 public class JavaScriptDebugger extends WindowAdapter implements ActionListener, Observer {
     private static final Logger LOG = LoggerFactory.getLogger(JavaScriptDebugger.class);
 
-    private IosUiAutomationDevice device;
+    private UiAutomationDevice device;
 
     private final JSplitPane jSplitPane = new JSplitPane();
 
@@ -192,7 +192,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
             return;
         }
 
-        device = new IosUiAutomationDevice(jcbDevices.getSelectedItem() + "");
+        device = new UiAutomationDevice(jcbDevices.getSelectedItem() + "");
         device.start(app);
 
         this.jcbDevices.setEnabled(false);
