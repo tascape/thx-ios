@@ -61,6 +61,9 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
 
     public static final String FAIL = "Fail: The target application appears to have died";
 
+    public static final String TRACE_TEMPLATE = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents"
+        + "/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
+
     private final SynchronousQueue<String> javaScriptQueue = new SynchronousQueue<>();
 
     private final BlockingQueue<String> responseQueue = new ArrayBlockingQueue<>(5000);
@@ -238,7 +241,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         new Thread(ngs).start();
         Utils.sleep(2000, "");
         this.ngPort = ngs.getPort();
-        LOG.debug("ng port {}", this.ngPort);
+        LOG.trace("ng port {}", this.ngPort);
         return ngs;
     }
 
@@ -255,7 +258,7 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
                 this.rmiPort += 7;
             }
         }
-        LOG.debug("rmi port {}", this.rmiPort);
+        LOG.trace("rmi port {}", this.rmiPort);
         callHandler.registerGlobal(JavaScriptServer.class, this);
         return rmis;
     }
@@ -279,12 +282,11 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
             .append("}\n");
         File js = File.createTempFile("instruments-", ".js");
         FileUtils.write(js, sb);
-        LOG.debug("{}\n{}", js, sb);
+        LOG.trace("{}\n{}", js, sb);
 
         CommandLine cmdLine = new CommandLine("instruments");
         cmdLine.addArgument("-t");
-        cmdLine.addArgument("/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns"
-            + "/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate");
+        cmdLine.addArgument(TRACE_TEMPLATE);
         cmdLine.addArgument("-w");
         cmdLine.addArgument(this.getIosDevice().getUUID());
         cmdLine.addArgument(appName);
@@ -293,8 +295,8 @@ public class IosUiAutomationDevice extends LibIMobileDevice implements JavaScrip
         cmdLine.addArgument(js.getAbsolutePath());
         cmdLine.addArgument("-e");
         cmdLine.addArgument("UIARESULTSPATH");
-        cmdLine.addArgument(Paths.get(System.getProperty("user.home"), "instruments").toFile().getAbsolutePath());
-        LOG.debug("{}", cmdLine.toString());
+        cmdLine.addArgument(Paths.get(System.getProperty("java.io.tmpdir")).toFile().getAbsolutePath());
+        LOG.trace("{}", cmdLine.toString());
         ExecuteWatchdog watchdog = new ExecuteWatchdog(Long.MAX_VALUE);
         Executor executor = new DefaultExecutor();
         executor.setWatchdog(watchdog);
