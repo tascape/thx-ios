@@ -203,9 +203,7 @@ public class LibIMobileDevice extends EntityDriver {
 
     public File takeDeviceScreenshot() throws EntityDriverException {
         try {
-            File png = this.getLogPath().resolve("ss-" + System.currentTimeMillis() + ".png").toFile();
-            png.mkdirs();
-            png.createNewFile();
+            File png = this.saveIntoFile("ss", "png", "");
             this.screenshotService.takeScreenshot(png);
             LOG.debug("Save screenshot to {}", png.getAbsolutePath());
             return png;

@@ -14,6 +14,7 @@
 package org.libimobiledevice.ios.driver.binding.exceptions;
 
 public class SDKException extends Exception {
+    private static final long serialVersionUID = 54305842397L;
 
     private final SDKErrorCode code;
 
