@@ -179,13 +179,13 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
             } else if (e.getSource() == jbClear) {
                 this.jtaResponse.setText("");
             }
-        } catch (SDKException | IOException | InterruptedException | LipeRMIException | EntityDriverException ex) {
+        } catch (Exception ex) {
             LOG.error("", ex);
             JOptionPane.showMessageDialog(jSplitPane, ex.getMessage());
         }
     }
 
-    public void launchApp() throws SDKException, IOException, InterruptedException, LipeRMIException {
+    public void launchApp() throws Exception {
         String app = jtfApp.getText().trim();
         if (StringUtils.isEmpty(app)) {
             JOptionPane.showMessageDialog(jSplitPane, "No app name specified");

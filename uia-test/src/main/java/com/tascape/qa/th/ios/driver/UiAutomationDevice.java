@@ -50,6 +50,7 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -63,6 +64,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptSe
 
     public static final String TRACE_TEMPLATE = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents"
         + "/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
+
+    public static final int JAVASCRIPT_TIMEOUT_SECOND = 10;
 
     private final SynchronousQueue<String> javaScriptQueue = new SynchronousQueue<>();
 
@@ -84,16 +87,17 @@ public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptSe
         super(uuid);
     }
 
-    public void start(String appName) throws IOException, InterruptedException, LipeRMIException {
-        LOG.info("Start servers");
+    public void start(String appName) throws Exception {
+        LOG.info("Start server");
         ngServer = this.startNailGunServer();
         rmiServer = this.startRmiServer();
         instrumentsDog = this.startInstrumentsServer(appName);
         addInstrumentsStreamObserver(this);
+        sendJavaScript("window.logElement();").forEach(l -> LOG.debug(l));
     }
 
     public void stop() {
-        LOG.info("Stop servers");
+        LOG.info("Stop server");
         if (ngServer != null) {
             ngServer.shutdown(false);
         }
@@ -178,11 +182,14 @@ public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptSe
     public List<String> sendJavaScript(String javaScript) throws InterruptedException, EntityDriverException {
         String reqId = UUID.randomUUID().toString();
         LOG.trace("sending js {}", javaScript);
-        javaScriptQueue.put("UIALogger.logMessage('" + reqId + " start');");
-        javaScriptQueue.put(javaScript);
-        javaScriptQueue.put("UIALogger.logMessage('" + reqId + " stop');");
+        javaScriptQueue.offer("UIALogger.logMessage('" + reqId + " start');", JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+        javaScriptQueue.offer(javaScript, JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+        javaScriptQueue.offer("UIALogger.logMessage('" + reqId + " stop');", JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
         while (true) {
-            String res = this.responseQueue.take();
+            String res = this.responseQueue.poll(JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+            if (res == null) {
+                throw new EntityDriverException("no response from device");
+            }
             LOG.trace(res);
             if (res.contains(FAIL)) {
                 throw new EntityDriverException(res);
@@ -193,7 +200,10 @@ public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptSe
         }
         List<String> lines = new ArrayList<>();
         while (true) {
-            String res = this.responseQueue.take();
+            String res = this.responseQueue.poll(JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+            if (res == null) {
+                throw new EntityDriverException("no response from device");
+            }
             LOG.trace(res);
             if (res.contains(FAIL)) {
                 throw new EntityDriverException(res);
@@ -271,8 +281,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptSe
             .append("  var app = target.frontMostApp();\n")
             .append("  var window = app.mainWindow();\n")
             .append("  var js = host.performTaskWithPathArgumentsTimeout('").append(JavaScriptNail.NG_CLIENT)
-            .append("', ['--nailgun-port', '").append(ngPort).append("', '")
-            .append(JavaScriptNail.class.getName()).append("', '").append(rmiPort).append("'], 10000);\n")
+            .append("', ['--nailgun-port', '").append(ngPort).append("', '").append(JavaScriptNail.class.getName())
+            .append("', '").append(rmiPort).append("'], 10000);\n")
             .append("  UIALogger.logDebug(js.stdout);\n")
             .append("  try {\n")
             .append("    var res = eval(js.stdout);\n")
@@ -357,9 +367,10 @@ public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptSe
     }
 
     public static void main(String[] args) throws Exception {
-        UiAutomationDevice d = new UiAutomationDevice("c73cd94b20897033b6462e1afef9531b524085c3");
+        UiAutomationDevice d = new UiAutomationDevice(LibIMobileDevice.getAllUuids().get(0));
         d.start("Xinkaishi");
         LOG.debug("{}", d.getDisplaySize());
         d.stop();
+        System.exit(0);
     }
 }
