@@ -33,6 +33,7 @@ import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.martiansoftware.nailgun.NGServer;
+import com.tascape.qa.th.SystemConfiguration;
 import com.tascape.qa.th.exception.EntityDriverException;
 import net.sf.lipermi.exception.LipeRMIException;
 import net.sf.lipermi.handler.CallHandler;
@@ -60,12 +61,15 @@ import org.apache.commons.lang3.StringUtils;
 public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptServer, Observer {
     private static final Logger LOG = LoggerFactory.getLogger(UiAutomationDevice.class);
 
+    public static final String SYSPROP_TIMEOUT_SECOND = "qa.th.driver.ios.TIMEOUT_SECOND";
+
     public static final String FAIL = "Fail: The target application appears to have died";
 
     public static final String TRACE_TEMPLATE = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents"
         + "/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
 
-    public static final int JAVASCRIPT_TIMEOUT_SECOND = 10;
+    public static final int JAVASCRIPT_TIMEOUT_SECOND
+        = SystemConfiguration.getInstance().getIntProperty(SYSPROP_TIMEOUT_SECOND, 30);
 
     private final SynchronousQueue<String> javaScriptQueue = new SynchronousQueue<>();
 
@@ -182,9 +186,11 @@ public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptSe
     public List<String> sendJavaScript(String javaScript) throws InterruptedException, EntityDriverException {
         String reqId = UUID.randomUUID().toString();
         LOG.trace("sending js {}", javaScript);
-        javaScriptQueue.offer("UIALogger.logMessage('" + reqId + " start');", JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+        javaScriptQueue.offer("UIALogger.logMessage('" + reqId + " start');", JAVASCRIPT_TIMEOUT_SECOND,
+            TimeUnit.SECONDS);
         javaScriptQueue.offer(javaScript, JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
-        javaScriptQueue.offer("UIALogger.logMessage('" + reqId + " stop');", JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+        javaScriptQueue
+            .offer("UIALogger.logMessage('" + reqId + " stop');", JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
         while (true) {
             String res = this.responseQueue.poll(JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
             if (res == null) {
