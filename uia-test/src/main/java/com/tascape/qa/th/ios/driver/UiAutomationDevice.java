@@ -39,9 +39,15 @@ import net.sf.lipermi.exception.LipeRMIException;
 import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Server;
 import com.tascape.qa.th.ios.comm.JavaScriptNail;
+import com.tascape.qa.th.ios.model.DeviceOrientation;
+import com.tascape.qa.th.ios.model.UIAAlert;
 import com.tascape.qa.th.ios.model.UIAElement;
+import com.tascape.qa.th.ios.model.UIAException;
+import com.tascape.qa.th.ios.model.UIATarget;
 import com.tascape.qa.th.libx.DefaultExecutor;
 import java.awt.Dimension;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +64,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author linsong wang
  */
-public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptServer, Observer {
+public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, JavaScriptServer, Observer {
     private static final Logger LOG = LoggerFactory.getLogger(UiAutomationDevice.class);
 
     public static final String SYSPROP_TIMEOUT_SECOND = "qa.th.driver.ios.TIMEOUT_SECOND";
@@ -112,10 +118,6 @@ public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptSe
             instrumentsDog.stop();
             instrumentsDog.killedProcess();
         }
-    }
-
-    public void delay(int second) throws InterruptedException, EntityDriverException {
-        this.sendJavaScript("target.delay(" + second + ")");
     }
 
     /**
@@ -183,22 +185,31 @@ public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptSe
             .findFirst().isPresent();
     }
 
-    public List<String> sendJavaScript(String javaScript) throws InterruptedException, EntityDriverException {
+    public List<String> sendJavaScript(String javaScript) throws UIAException {
         String reqId = UUID.randomUUID().toString();
         LOG.trace("sending js {}", javaScript);
-        javaScriptQueue.offer("UIALogger.logMessage('" + reqId + " start');", JAVASCRIPT_TIMEOUT_SECOND,
-            TimeUnit.SECONDS);
-        javaScriptQueue.offer(javaScript, JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
-        javaScriptQueue
-            .offer("UIALogger.logMessage('" + reqId + " stop');", JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+        try {
+            javaScriptQueue.offer("UIALogger.logMessage('" + reqId + " start');", JAVASCRIPT_TIMEOUT_SECOND,
+                TimeUnit.SECONDS);
+            javaScriptQueue.offer(javaScript, JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+            javaScriptQueue
+                .offer("UIALogger.logMessage('" + reqId + " stop');", JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            throw new UIAException("Interrupted", ex);
+        }
         while (true) {
-            String res = this.responseQueue.poll(JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+            String res;
+            try {
+                res = this.responseQueue.poll(JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                throw new UIAException("Interrupted", ex);
+            }
             if (res == null) {
-                throw new EntityDriverException("no response from device");
+                throw new UIAException("no response from device");
             }
             LOG.trace(res);
             if (res.contains(FAIL)) {
-                throw new EntityDriverException(res);
+                throw new UIAException(res);
             }
             if (res.contains(reqId + " start")) {
                 break;
@@ -206,13 +217,18 @@ public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptSe
         }
         List<String> lines = new ArrayList<>();
         while (true) {
-            String res = this.responseQueue.poll(JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+            String res;
+            try {
+                res = this.responseQueue.poll(JAVASCRIPT_TIMEOUT_SECOND, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                throw new UIAException("Interrupted", ex);
+            }
             if (res == null) {
-                throw new EntityDriverException("no response from device");
+                throw new UIAException("no response from device");
             }
             LOG.trace(res);
             if (res.contains(FAIL)) {
-                throw new EntityDriverException(res);
+                throw new UIAException(res);
             }
             if (res.contains(reqId + " start")) {
                 continue;
@@ -250,6 +266,232 @@ public class UiAutomationDevice extends LibIMobileDevice implements JavaScriptSe
         } catch (InterruptedException ex) {
             LOG.error("Cannot save instruments response");
         }
+    }
+
+    @Override
+    public boolean deactivateApp(int duration) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String model() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String name() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Rectangle2D.Float rect() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String systemName() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String systemVersion() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public DeviceOrientation deviceOrientation() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setDeviceOrientation(DeviceOrientation orientation) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean setLocation(double latitude, double longitude) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void clickVolumeDown() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void clickVolumeUp() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void holdVolumeDown() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void holdVolumeUp() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void lockForDuration() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void lock() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void shake() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void unlock() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void dragFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void dragFromToForDuration(Rectangle2D.Float from, Rectangle2D.Float to, int duration) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void dragFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void doubleTap(float x, float y) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void doubleTap(Rectangle2D.Float rectangle) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void doubleTap(String javaScript) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void flickFromTo(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void flickFromTo(Rectangle2D.Float from, Rectangle2D.Float to, int duration) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void flickFromTo(String fromJavaScript, String toJavaScript, int duration) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void pinchCloseFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void pinchCloseFromToForDuration(Rectangle2D.Float from, Rectangle2D.Float to, int duration) throws
+        UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void pinchCloseFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws
+        UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void pinchOpenFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void pinchOpenFromToForDuration(Rectangle2D.Float from, Rectangle2D.Float to, int duration) throws
+        UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void pinchOpenFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void tap(float x, float y) throws UIAException {
+        String p = String.format("{x:%f, y:%f}", x, y);
+        this.sendJavaScript("target.tap(" + p + ");");
+    }
+
+    @Override
+    public void tap(Rectangle2D.Float rect) throws UIAException {
+        String r = String.format("{x:%f, y:%f, width:%f, height:%f}", rect.x, rect.y, rect.width, rect.height);
+        this.sendJavaScript("target.tap(" + r + ");");
+    }
+
+    @Override
+    public void tap(String javaScript) throws UIAException {
+        this.sendJavaScript("var e = " + javaScript + "; target.touchAndHold(e);");
+    }
+
+    @Override
+    public void touchAndHold(Point2D.Float point, int duration) throws UIAException {
+        String p = String.format("{x:%f, y:%f}", point.x, point.y);
+        this.sendJavaScript("target.touchAndHold(" + p + ", " + duration + ");");
+    }
+
+    @Override
+    public void touchAndHold(Rectangle2D.Float rect, int duration) throws UIAException {
+        String r = String.format("{x:%f, y:%f, width:%f, height:%f}", rect.x, rect.y, rect.width, rect.height);
+        this.sendJavaScript("target.touchAndHold(" + r + ", " + duration + ");");
+    }
+
+    @Override
+    public void touchAndHold(String javaScript, int duration) throws UIAException {
+        this.sendJavaScript("var e = " + javaScript + "; target.touchAndHold(e, " + duration + ");");
+    }
+
+    @Override
+    public void popTimeout() throws UIAException {
+        this.sendJavaScript("target.popTimeout();");
+    }
+
+    @Override
+    public void pushTimeout(int timeoutValue) throws UIAException {
+        this.sendJavaScript("target.pushTimeout(" + timeoutValue + ");");
+    }
+
+    @Override
+    public void setTimeout(int timeout) throws UIAException {
+        this.sendJavaScript("target.setTimeout(" + timeout + ");");
+    }
+
+    @Override
+    public int timeout() throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void delay(int timeInterval) throws UIAException {
+        this.sendJavaScript("target.delay(" + timeInterval + ");");
+    }
+
+    @Override
+    public boolean onAlert(UIAAlert alert) throws UIAException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private NGServer startNailGunServer() throws InterruptedException {
