@@ -24,7 +24,7 @@ import java.awt.geom.Rectangle2D;
  */
 public interface UIATarget {
 
-    boolean deactivateApp(int duration) throws UIAException;
+    boolean deactivateAppForDuration (int duration) throws UIAException;
 
     String model() throws UIAException;
 
@@ -50,7 +50,7 @@ public interface UIATarget {
 
     void holdVolumeUp() throws UIAException;
 
-    void lockForDuration() throws UIAException;
+    void lockForDuration(int duration) throws UIAException;
 
     void lock() throws UIAException;
 
@@ -111,4 +111,16 @@ public interface UIATarget {
     void delay(int timeInterval) throws UIAException;
 
     boolean onAlert(UIAAlert alert) throws UIAException;
+
+    default String toCGString(Rectangle2D.Float rect) {
+        return String.format("{{%f, %f}, {%f, %f}}", rect.x, rect.y, rect.width, rect.height);
+    }
+
+    default String toCGString(Point2D.Float point) {
+        return String.format("{x:%f, y:%f}", point.x, point.y);
+    }
+
+    default String toCGString(float x, float y) {
+        return String.format("{x:%f, y:%f}", x, y);
+    }
 }

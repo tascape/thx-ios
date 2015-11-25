@@ -76,7 +76,7 @@ public class LibIMobileDevice extends EntityDriver {
 
     private final WebInspectorService webInspectorService;
 
-    public static List<String> getAllUuids() throws SDKException, InterruptedException {
+    public static List<String> getAllUuids() throws SDKException {
         LOG.info("Detecting attached devices");
         List<String> uuids = new ArrayList<>();
         new DeviceService().startDetection(new DeviceCallBack() {
@@ -95,7 +95,11 @@ public class LibIMobileDevice extends EntityDriver {
                 uuids.remove(uuid);
             }
         });
-        Thread.sleep(5000);
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ex) {
+            LOG.warn(ex.getMessage());
+        }
         return uuids;
     }
 
