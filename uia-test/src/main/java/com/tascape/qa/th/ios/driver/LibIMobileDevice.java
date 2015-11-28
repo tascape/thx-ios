@@ -92,6 +92,7 @@ public class LibIMobileDevice extends EntityDriver {
 
             @Override
             protected void onDeviceRemoved(String uuid) {
+                LOG.info("uuid {}", uuid);
                 uuids.remove(uuid);
             }
         });

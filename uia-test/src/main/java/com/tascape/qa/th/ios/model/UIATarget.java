@@ -111,16 +111,4 @@ public interface UIATarget {
     void delay(int timeInterval) throws UIAException;
 
     boolean onAlert(UIAAlert alert) throws UIAException;
-
-    default String toCGString(Rectangle2D.Float rect) {
-        return String.format("{{%f, %f}, {%f, %f}}", rect.x, rect.y, rect.width, rect.height);
-    }
-
-    default String toCGString(Point2D.Float point) {
-        return String.format("{x:%f, y:%f}", point.x, point.y);
-    }
-
-    default String toCGString(float x, float y) {
-        return String.format("{x:%f, y:%f}", x, y);
-    }
 }

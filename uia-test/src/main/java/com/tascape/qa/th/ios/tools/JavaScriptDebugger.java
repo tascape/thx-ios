@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -44,7 +43,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import net.sf.lipermi.exception.LipeRMIException;
 import org.apache.commons.lang3.StringUtils;
 import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
 import org.slf4j.Logger;
@@ -107,7 +105,6 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
                 JPanel jpApp = new JPanel();
                 jp.add(jpApp, BorderLayout.PAGE_START);
                 jpApp.setLayout(new BoxLayout(jpApp, BoxLayout.LINE_AXIS));
-//                jpApp.add(Box.createHorizontalGlue());
                 jpApp.add(new JLabel("App Name"));
                 jpApp.add(jtfApp);
                 if (StringUtils.isNotEmpty(appName)) {
@@ -142,6 +139,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
             jpLeft.setMinimumSize(new Dimension(600, 400));
             jpLeft.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
             jtaResponse.setEditable(false);
+            jtaResponse.setTabSize(4);
             this.jSplitPane.setLeftComponent(jpLeft);
             JScrollPane jsp = new JScrollPane(jtaResponse);
             new SmartScroller(jsp);

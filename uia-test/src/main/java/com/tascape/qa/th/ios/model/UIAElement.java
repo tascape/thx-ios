@@ -15,10 +15,24 @@
  */
 package com.tascape.qa.th.ios.model;
 
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+
 /**
  *
  * @author linsong wang
  */
 public interface UIAElement {
 
+    static String toCGString(Rectangle2D.Float rect) {
+        return String.format("{{%f, %f}, {%f, %f}}", rect.x, rect.y, rect.width, rect.height);
+    }
+
+    static String toCGString(Point2D.Float point) {
+        return String.format("{x:%f, y:%f}", point.x, point.y);
+    }
+
+    static String toCGString(float x, float y) {
+        return String.format("{x:%f, y:%f}", x, y);
+    }
 }
