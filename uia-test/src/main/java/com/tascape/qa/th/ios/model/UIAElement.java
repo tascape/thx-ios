@@ -1,5 +1,5 @@
 /*
- * Copyright 2015.
+ * Copyright 2015 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.tascape.qa.th.ios.model;
 
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 
 /**
  *
@@ -24,9 +23,7 @@ import java.awt.geom.Rectangle2D;
  */
 public interface UIAElement {
 
-    static String toCGString(Rectangle2D.Float rect) {
-        return String.format("{{%f, %f}, {%f, %f}}", rect.x, rect.y, rect.width, rect.height);
-    }
+    UIAElement[] elements();
 
     static String toCGString(Point2D.Float point) {
         return String.format("{x:%f, y:%f}", point.x, point.y);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015.
+ * Copyright 2015 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,14 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
+ * See https://developer.apple.com/library/ios/documentation/ToolsLanguages/Reference/UIATargetClassReference/index.html
+ * for more detail.
  *
  * @author linsong wang
  */
 public interface UIATarget {
 
-    boolean deactivateAppForDuration (int duration) throws UIAException;
+    void deactivateAppForDuration(int duration) throws UIAException;
 
     String model() throws UIAException;
 
@@ -40,63 +42,61 @@ public interface UIATarget {
 
     void setDeviceOrientation(DeviceOrientation orientation) throws UIAException;
 
-    boolean setLocation(double latitude, double longitude) throws UIAException;
+    void setLocation(double latitude, double longitude) throws UIAException;
 
     void clickVolumeDown() throws UIAException;
 
     void clickVolumeUp() throws UIAException;
 
-    void holdVolumeDown() throws UIAException;
+    void holdVolumeDown(int duration) throws UIAException;
 
-    void holdVolumeUp() throws UIAException;
+    void holdVolumeUp(int duration) throws UIAException;
 
+    /**
+     * Locks screen for specified seconds, then tries to unlock. Simulating passcode entry is currently unsupported.
+     * Set the Settings - General - Passcode Lock feature to Off prior to running your tests.
+     *
+     * @param duration in second
+     *
+     * @throws UIAException any error
+     */
     void lockForDuration(int duration) throws UIAException;
-
-    void lock() throws UIAException;
 
     void shake() throws UIAException;
 
-    void unlock() throws UIAException;
-
     void dragFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException;
-
-    void dragFromToForDuration(Rectangle2D.Float from, Rectangle2D.Float to, int duration) throws UIAException;
 
     void dragFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException;
 
     void doubleTap(float x, float y) throws UIAException;
 
-    void doubleTap(Rectangle2D.Float rectangle) throws UIAException;
-
     void doubleTap(String javaScript) throws UIAException;
 
     void flickFromTo(Point2D.Float from, Point2D.Float to, int duration) throws UIAException;
-
-    void flickFromTo(Rectangle2D.Float from, Rectangle2D.Float to, int duration) throws UIAException;
 
     void flickFromTo(String fromJavaScript, String toJavaScript, int duration) throws UIAException;
 
     void pinchCloseFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException;
 
-    void pinchCloseFromToForDuration(Rectangle2D.Float from, Rectangle2D.Float to, int duration) throws UIAException;
-
     void pinchCloseFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException;
 
     void pinchOpenFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException;
-
-    void pinchOpenFromToForDuration(Rectangle2D.Float from, Rectangle2D.Float to, int duration) throws UIAException;
 
     void pinchOpenFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException;
 
     void tap(float x, float y) throws UIAException;
 
-    void tap(Rectangle2D.Float rectangle) throws UIAException;
-
+    /**
+     * Taps on an element specified by JavaScript.
+     *
+     * @param javaScript the javascript that uniquely identify the element, such as "window.tabBars()['MainTabBar']",
+     *                   or "window.elements()[1].buttons()[0]"
+     *
+     * @throws UIAException any error
+     */
     void tap(String javaScript) throws UIAException;
 
     void touchAndHold(Point2D.Float point, int duration) throws UIAException;
-
-    void touchAndHold(Rectangle2D.Float point, int duration) throws UIAException;
 
     void touchAndHold(String javaScript, int duration) throws UIAException;
 
