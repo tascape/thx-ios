@@ -21,15 +21,17 @@ import java.awt.geom.Point2D;
  *
  * @author linsong wang
  */
-public interface UIAElement {
+public class UIAElement {
 
-    UIAElement[] elements();
+    UIAElement[] elements() {
+        return null;
+    }
 
-    static String toCGString(Point2D.Float point) {
+    public static String toCGString(Point2D.Float point) {
         return String.format("{x:%f, y:%f}", point.x, point.y);
     }
 
-    static String toCGString(float x, float y) {
+    public static String toCGString(float x, float y) {
         return String.format("{x:%f, y:%f}", x, y);
     }
 }

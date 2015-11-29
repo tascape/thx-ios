@@ -19,6 +19,6 @@ package com.tascape.qa.th.ios.model;
  *
  * @author linsong wang
  */
-public interface UIASecureTextField extends UIATextField {
+public class UIASecureTextField extends UIATextField {
 
 }
