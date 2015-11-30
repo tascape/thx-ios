@@ -38,10 +38,13 @@ import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Server;
 import com.tascape.qa.th.ios.comm.JavaScriptNail;
 import com.tascape.qa.th.ios.model.DeviceOrientation;
+import com.tascape.qa.th.ios.model.UIA;
 import com.tascape.qa.th.ios.model.UIAAlert;
+import com.tascape.qa.th.ios.model.UIAApplication;
 import com.tascape.qa.th.ios.model.UIAElement;
 import com.tascape.qa.th.ios.model.UIAException;
 import com.tascape.qa.th.ios.model.UIATarget;
+import com.tascape.qa.th.ios.model.UIAWindow;
 import com.tascape.qa.th.libx.DefaultExecutor;
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
@@ -62,7 +65,8 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author linsong wang
  */
-public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, JavaScriptServer, Observer {
+public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, UIAApplication, JavaScriptServer,
+    Observer {
     private static final Logger LOG = LoggerFactory.getLogger(UiAutomationDevice.class);
 
     public static final String SYSPROP_TIMEOUT_SECOND = "qa.th.driver.ios.TIMEOUT_SECOND";
@@ -274,6 +278,11 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, J
         }
     }
 
+    public UIAWindow mainWindow() throws UIAException {
+        List<String> lines = logElementTree();
+        return UIA.parseElementTree(lines);
+    }
+
     @Override
     public void deactivateAppForDuration(int duration) throws UIAException {
         sendJavaScript("UIALogger.logMessage(target.deactivateAppForDuration (" + duration + "));");
@@ -354,8 +363,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, J
 
     @Override
     public void dragFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
-        this.sendJavaScript("target.dragFromToForDuration(" + UIAElement.toCGString(from) + ", "
-            + UIAElement.toCGString(to) + ", " + duration + ");");
+        this.sendJavaScript("target.dragFromToForDuration(" + toCGString(from) + ", "
+            + toCGString(to) + ", " + duration + ");");
     }
 
     @Override
@@ -366,7 +375,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, J
 
     @Override
     public void doubleTap(float x, float y) throws UIAException {
-        this.sendJavaScript("target.doubleTap(" + UIAElement.toCGString(x, y) + ");");
+        this.sendJavaScript("target.doubleTap(" + toCGString(x, y) + ");");
     }
 
     @Override
@@ -376,7 +385,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, J
 
     @Override
     public void flickFromTo(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
-        this.sendJavaScript("target.flickFromTo(" + UIAElement.toCGString(from) + ", " + UIAElement.toCGString(to)
+        this.sendJavaScript("target.flickFromTo(" + toCGString(from) + ", " + toCGString(to)
             + ", " + duration + ");");
     }
 
@@ -388,8 +397,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, J
 
     @Override
     public void pinchCloseFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
-        this.sendJavaScript("target.pinchCloseFromToForDuration(" + UIAElement.toCGString(from) + ", "
-            + UIAElement.toCGString(to) + ", " + duration + ");");
+        this.sendJavaScript("target.pinchCloseFromToForDuration(" + toCGString(from) + ", "
+            + toCGString(to) + ", " + duration + ");");
     }
 
     @Override
@@ -401,8 +410,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, J
 
     @Override
     public void pinchOpenFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
-        this.sendJavaScript("target.pinchOpenFromToForDuration(" + UIAElement.toCGString(from) + ", "
-            + UIAElement.toCGString(to) + ", " + duration + ");");
+        this.sendJavaScript("target.pinchOpenFromToForDuration(" + toCGString(from) + ", "
+            + toCGString(to) + ", " + duration + ");");
     }
 
     @Override
@@ -413,7 +422,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, J
 
     @Override
     public void tap(float x, float y) throws UIAException {
-        this.sendJavaScript("target.tap(" + UIAElement.toCGString(x, y) + ");");
+        this.sendJavaScript("target.tap(" + toCGString(x, y) + ");");
     }
 
     @Override
@@ -423,7 +432,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, J
 
     @Override
     public void touchAndHold(Point2D.Float point, int duration) throws UIAException {
-        this.sendJavaScript("target.touchAndHold(" + UIAElement.toCGString(point) + ", " + duration + ");");
+        this.sendJavaScript("target.touchAndHold(" + toCGString(point) + ", " + duration + ");");
     }
 
     @Override

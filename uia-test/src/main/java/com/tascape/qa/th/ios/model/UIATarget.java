@@ -111,4 +111,12 @@ public interface UIATarget {
     void delay(int timeInterval) throws UIAException;
 
     boolean onAlert(UIAAlert alert) throws UIAException;
+
+    default String toCGString(Point2D.Float point) {
+        return String.format("{x:%f, y:%f}", point.x, point.y);
+    }
+
+    default String toCGString(float x, float y) {
+        return String.format("{x:%f, y:%f}", x, y);
+    }
 }
