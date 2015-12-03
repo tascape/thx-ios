@@ -111,7 +111,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     public void stop() {
-        LOG.info("Stop server");
+        LOG.info("Stop server ()", this.getIosDevice().getUUID());
         if (ngServer != null) {
             ngServer.shutdown(false);
         }
