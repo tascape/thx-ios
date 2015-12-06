@@ -29,13 +29,11 @@ public abstract class App extends EntityDriver {
 
     protected UiAutomationDevice uiaDevice;
 
-    public abstract String getAppBundleId();
+    public abstract String getBundleId();
 
-    public abstract String getAppName();
-
-    public String getAppVersion() {
+    public String getVersion() {
         try {
-            return uiaDevice.getAppVersion(getAppBundleId());
+            return uiaDevice.getAppVersion(getBundleId());
         } catch (SDKException ex) {
             LOG.warn(ex.getMessage());
             return "na";
@@ -47,6 +45,6 @@ public abstract class App extends EntityDriver {
     }
 
     public void launch() throws Exception {
-        uiaDevice.start(this.getAppName());
+        uiaDevice.start(this.getName());
     }
 }

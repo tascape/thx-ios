@@ -154,12 +154,20 @@ class LibIMobileDevice extends EntityDriver {
     @Override
     public String getName() {
         try {
-            return String.format("%s, %s, %s",
-                informationService.getDeviceName(),
-                informationService.getDeviceType(),
-                informationService.getProductVersion());
+            return informationService.getDeviceName() + "-" + informationService.getDeviceType();
         } catch (SDKException ex) {
-            return LibIMobileDevice.class.getName();
+            LOG.warn(ex.getMessage());
+            return LibIMobileDevice.class.getSimpleName();
+        }
+    }
+
+    @Override
+    public String getVersion() {
+        try {
+            return informationService.getProductVersion();
+        } catch (SDKException ex) {
+            LOG.warn(ex.getMessage());
+            return "na";
         }
     }
 
