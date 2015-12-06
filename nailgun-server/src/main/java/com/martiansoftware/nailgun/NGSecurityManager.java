@@ -53,7 +53,7 @@ public class NGSecurityManager extends SecurityManager {
                         exit.println(status);
                 }
                 
-                throw new NGExitException(status);
+//                throw new NGExitException(status);
         }
 
         public void checkPermission(Permission perm) {

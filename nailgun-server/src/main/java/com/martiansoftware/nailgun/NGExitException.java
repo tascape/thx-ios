@@ -1,8 +1,8 @@
 /*
  * This class is based upon org.apache.tools.ant.ExitException and is
  * subject to the following:
- * 
- * 
+ *
+ *
  * The Apache Software License, Version 1.1
  *
  * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
@@ -69,7 +69,7 @@ public class NGExitException extends SecurityException {
     /**
      * Status code
      */
-    private int status;
+    private final int status;
 
     /**
      * Constructs an exit exception.
@@ -83,12 +83,15 @@ public class NGExitException extends SecurityException {
 
     /**
      * A lot of code out there, for example ant's Launcher, runs inside a
-     * try/catch (Throwable) which will squash this exception; most also calll
+     * try/catch (Throwable) which will squash this exception; most also call
      * printStackTrace(), so this re-throws the exception to escape the handling
      * code.
+     *
+     * @param out output stream
      */
     public void printStackTrace(PrintStream out) {
-        throw this;
+        super.printStackTrace(out);
+//        throw this;
     }
 
     public void reallyPrintStackTrace(PrintStream out) {
