@@ -7,12 +7,14 @@
     <parent>
         <groupId>com.tascape.qa</groupId>
         <artifactId>thx-ios</artifactId>
-        <version>1.0.3</version>  
+        <version>1.0.4</version>  
     </parent>
     <groupId>com.tascape.qa</groupId>
     <artifactId>thx-ios-uiat</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
+
     <name>thx-ios-uiat</name>
+    <description>uiautomation test</description>
 
     <dependencies>
         <dependency>
@@ -38,82 +40,4 @@
             <version>1.0.41</version>
         </dependency>
     </dependencies>
-
-    <description>uiautomation test</description>
-    <url>https://github.com/tascape/thx-ios</url>
-    <licenses>
-        <license>
-            <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
-    <developers>
-        <developer>
-            <name>Linsong Wang</name>
-            <email>tascape@gmail.com</email>
-            <organization>Tascape</organization>
-            <organizationUrl>http://www.tascape.com</organizationUrl>
-        </developer>
-    </developers>
-    <scm>
-        <connection>scm:git:git@github.com:tascape/thx-ios.git</connection>
-        <developerConnection>scm:git:git@github.com:tascape/thx-ios.git</developerConnection>
-        <url>git:git@github.com:juven/thx-ios.git</url>
-    </scm>
-    
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.5</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

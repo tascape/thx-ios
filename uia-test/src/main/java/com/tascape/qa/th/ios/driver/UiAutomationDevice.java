@@ -73,7 +73,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     public static final String INSTRUMENTS_ERROR = "Error:";
 
-    public static final String FAIL = "Fail: The target application appears to have died";
+    public static final String INSTRUMENTS_FAIL = "Fail: The target application appears to have died";
 
     public static final String TRACE_TEMPLATE = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents"
         + "/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
@@ -97,6 +97,10 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     private ESH instrumentsStreamHandler;
 
+    public UiAutomationDevice() throws SDKException {
+        super(getAllUuids().get(0));
+    }
+
     public UiAutomationDevice(String uuid) throws SDKException {
         super(uuid);
     }
@@ -107,7 +111,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         rmiServer = this.startRmiServer();
         instrumentsDog = this.startInstrumentsServer(appName);
         addInstrumentsStreamObserver(this);
-        sendJavaScript("window.logElement();").forEach(l -> LOG.debug(l));
+        runJavaScript("window.logElement();").forEach(l -> LOG.debug(l));
     }
 
     public void stop() {
@@ -133,7 +137,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * @throws UIAException in case of any issue
      */
     public Dimension getDisplaySize() throws UIAException {
-        List<String> lines = this.sendJavaScript("window.logElement();");
+        List<String> lines = this.runJavaScript("window.logElement();");
         Dimension dimension = new Dimension();
         String line = lines.stream().filter((l) -> (l.startsWith("UIAWindow"))).findFirst().get();
         if (StringUtils.isNotEmpty(line)) {
@@ -145,7 +149,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     public List<String> logElementTree() throws UIAException {
-        return this.sendJavaScript("window.logElementTree();");
+        return this.runJavaScript("window.logElementTree();");
     }
 
     /**
@@ -179,13 +183,13 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     public <T extends UIAElement> boolean doesElementExist(String javaScript, Class<T> type, String text) throws
         UIAException {
         String js = "var e = " + javaScript + "; e.logElement();";
-        return sendJavaScript(js).stream()
+        return runJavaScript(js).stream()
             .filter(line -> line.contains(type.getSimpleName()))
             .filter(line -> StringUtils.isEmpty(text) ? true : line.contains(text))
             .findFirst().isPresent();
     }
 
-    public List<String> sendJavaScript(String javaScript) throws UIAException {
+    public List<String> runJavaScript(String javaScript) throws UIAException {
         String reqId = UUID.randomUUID().toString();
         LOG.trace("sending js {}", javaScript);
         try {
@@ -208,7 +212,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
                 throw new UIAException("no response from device");
             }
             LOG.trace(res);
-            if (res.contains(FAIL)) {
+            if (res.contains(INSTRUMENTS_FAIL)) {
                 throw new UIAException(res);
             }
             if (res.contains(reqId + " start")) {
@@ -227,7 +231,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
                 throw new UIAException("no response from device");
             }
             LOG.trace(res);
-            if (res.contains(FAIL)) {
+            if (res.contains(INSTRUMENTS_FAIL)) {
                 throw new UIAException(res);
             }
             if (res.contains(reqId + " start")) {
@@ -285,174 +289,174 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     @Override
     public void deactivateAppForDuration(int duration) throws UIAException {
-        sendJavaScript("UIALogger.logMessage(target.deactivateAppForDuration (" + duration + "));");
+        runJavaScript("UIALogger.logMessage(target.deactivateAppForDuration (" + duration + "));");
     }
 
     @Override
     public String model() throws UIAException {
-        return getMessage(sendJavaScript("UIALogger.logMessage(target.model());"));
+        return getMessage(runJavaScript("UIALogger.logMessage(target.model());"));
     }
 
     @Override
     public String name() throws UIAException {
-        return getMessage(sendJavaScript("UIALogger.logMessage(target.name());"));
+        return getMessage(runJavaScript("UIALogger.logMessage(target.name());"));
     }
 
     @Override
     public Rectangle2D.Float rect() throws UIAException {
-        List<String> lines = sendJavaScript("UIALogger.logMessage(target.rect());");
+        List<String> lines = runJavaScript("UIALogger.logMessage(target.rect());");
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public String systemName() throws UIAException {
-        return getMessage(sendJavaScript("UIALogger.logMessage(target.systemName());"));
+        return getMessage(runJavaScript("UIALogger.logMessage(target.systemName());"));
     }
 
     @Override
     public String systemVersion() throws UIAException {
-        return getMessage(sendJavaScript("UIALogger.logMessage(target.systemVersion());"));
+        return getMessage(runJavaScript("UIALogger.logMessage(target.systemVersion());"));
     }
 
     @Override
     public DeviceOrientation deviceOrientation() throws UIAException {
-        sendJavaScript("UIALogger.logMessage(target.deviceOrientation());");
+        runJavaScript("UIALogger.logMessage(target.deviceOrientation());");
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void setDeviceOrientation(DeviceOrientation orientation) throws UIAException {
-        sendJavaScript("target.setDeviceOrientation(" + orientation.ordinal() + ");");
+        runJavaScript("target.setDeviceOrientation(" + orientation.ordinal() + ");");
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void setLocation(double latitude, double longitude) throws UIAException {
-        sendJavaScript("target.setLocation({latitude:" + latitude + ", longitude:" + longitude + "});");
+        runJavaScript("target.setLocation({latitude:" + latitude + ", longitude:" + longitude + "});");
     }
 
     @Override
     public void clickVolumeDown() throws UIAException {
-        this.sendJavaScript("target.clickVolumeDown();");
+        this.runJavaScript("target.clickVolumeDown();");
     }
 
     @Override
     public void clickVolumeUp() throws UIAException {
-        this.sendJavaScript("target.clickVolumeUp();");
+        this.runJavaScript("target.clickVolumeUp();");
     }
 
     @Override
     public void holdVolumeDown(int duration) throws UIAException {
-        this.sendJavaScript("target.holdVolumeDown(" + duration + ");");
+        this.runJavaScript("target.holdVolumeDown(" + duration + ");");
     }
 
     @Override
     public void holdVolumeUp(int duration) throws UIAException {
-        this.sendJavaScript("target.holdVolumeUp(" + duration + ");");
+        this.runJavaScript("target.holdVolumeUp(" + duration + ");");
     }
 
     @Override
     public void lockForDuration(int duration) throws UIAException {
-        this.sendJavaScript("target.lockForDuration(" + duration + ");");
+        this.runJavaScript("target.lockForDuration(" + duration + ");");
     }
 
     @Override
     public void shake() throws UIAException {
-        this.sendJavaScript("target.shake();");
+        this.runJavaScript("target.shake();");
     }
 
     @Override
     public void dragFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
-        this.sendJavaScript("target.dragFromToForDuration(" + toCGString(from) + ", "
+        this.runJavaScript("target.dragFromToForDuration(" + toCGString(from) + ", "
             + toCGString(to) + ", " + duration + ");");
     }
 
     @Override
     public void dragFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException {
-        this.sendJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
+        this.runJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
             + "target.dragFromToForDuration(e1, e2, " + duration + ");");
     }
 
     @Override
     public void doubleTap(float x, float y) throws UIAException {
-        this.sendJavaScript("target.doubleTap(" + toCGString(x, y) + ");");
+        this.runJavaScript("target.doubleTap(" + toCGString(x, y) + ");");
     }
 
     @Override
     public void doubleTap(String javaScript) throws UIAException {
-        this.sendJavaScript("var e = " + javaScript + "; target.doubleTap(e);");
+        this.runJavaScript("var e = " + javaScript + "; target.doubleTap(e);");
     }
 
     @Override
     public void flickFromTo(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
-        this.sendJavaScript("target.flickFromTo(" + toCGString(from) + ", " + toCGString(to)
+        this.runJavaScript("target.flickFromTo(" + toCGString(from) + ", " + toCGString(to)
             + ", " + duration + ");");
     }
 
     @Override
     public void flickFromTo(String fromJavaScript, String toJavaScript, int duration) throws UIAException {
-        this.sendJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
+        this.runJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
             + "target.flickFromTo(e1, e2, " + duration + ");");
     }
 
     @Override
     public void pinchCloseFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
-        this.sendJavaScript("target.pinchCloseFromToForDuration(" + toCGString(from) + ", "
+        this.runJavaScript("target.pinchCloseFromToForDuration(" + toCGString(from) + ", "
             + toCGString(to) + ", " + duration + ");");
     }
 
     @Override
     public void pinchCloseFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws
         UIAException {
-        this.sendJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
+        this.runJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
             + "target.pinchCloseFromToForDuration(e1, e2, " + duration + ");");
     }
 
     @Override
     public void pinchOpenFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
-        this.sendJavaScript("target.pinchOpenFromToForDuration(" + toCGString(from) + ", "
+        this.runJavaScript("target.pinchOpenFromToForDuration(" + toCGString(from) + ", "
             + toCGString(to) + ", " + duration + ");");
     }
 
     @Override
     public void pinchOpenFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException {
-        this.sendJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
+        this.runJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
             + "target.pinchOpenFromToForDuration(e1, e2, " + duration + ");");
     }
 
     @Override
     public void tap(float x, float y) throws UIAException {
-        this.sendJavaScript("target.tap(" + toCGString(x, y) + ");");
+        this.runJavaScript("target.tap(" + toCGString(x, y) + ");");
     }
 
     @Override
     public void tap(String javaScript) throws UIAException {
-        this.sendJavaScript("var e = " + javaScript + "; target.touchAndHold(e);");
+        this.runJavaScript("var e = " + javaScript + "; target.touchAndHold(e);");
     }
 
     @Override
     public void touchAndHold(Point2D.Float point, int duration) throws UIAException {
-        this.sendJavaScript("target.touchAndHold(" + toCGString(point) + ", " + duration + ");");
+        this.runJavaScript("target.touchAndHold(" + toCGString(point) + ", " + duration + ");");
     }
 
     @Override
     public void touchAndHold(String javaScript, int duration) throws UIAException {
-        this.sendJavaScript("var e = " + javaScript + "; target.touchAndHold(e, " + duration + ");");
+        this.runJavaScript("var e = " + javaScript + "; target.touchAndHold(e, " + duration + ");");
     }
 
     @Override
     public void popTimeout() throws UIAException {
-        this.sendJavaScript("target.popTimeout();");
+        this.runJavaScript("target.popTimeout();");
     }
 
     @Override
     public void pushTimeout(int timeoutValue) throws UIAException {
-        this.sendJavaScript("target.pushTimeout(" + timeoutValue + ");");
+        this.runJavaScript("target.pushTimeout(" + timeoutValue + ");");
     }
 
     @Override
     public void setTimeout(int timeout) throws UIAException {
-        this.sendJavaScript("target.setTimeout(" + timeout + ");");
+        this.runJavaScript("target.setTimeout(" + timeout + ");");
     }
 
     @Override
@@ -461,7 +465,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     public void delay(int timeInterval) throws UIAException {
-        this.sendJavaScript("target.delay(" + timeInterval + ");");
+        this.runJavaScript("target.delay(" + timeInterval + ");");
     }
 
     @Override
@@ -595,9 +599,9 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     public static void main(String[] args) throws SDKException {
-        UiAutomationDevice d = new UiAutomationDevice(LibIMobileDevice.getAllUuids().get(0));
+        UiAutomationDevice d = new UiAutomationDevice();
         try {
-            d.start("Jumblify");
+            d.start("Movies");
 
             LOG.debug("model {}", d.model());
         } catch (Throwable t) {

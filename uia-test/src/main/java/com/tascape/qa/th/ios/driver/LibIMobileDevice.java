@@ -1,5 +1,5 @@
 /*
- * Copyright 2015.
+ * Copyright 2015 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,12 @@ import org.slf4j.LoggerFactory;
  *
  * @author linsong wang
  */
-public class LibIMobileDevice extends EntityDriver {
+class LibIMobileDevice extends EntityDriver {
     private static final Logger LOG = LoggerFactory.getLogger(LibIMobileDevice.class);
+
+    public static final int DEVICE_DETECTION_TIMEOUT_MS = 5000;
+
+    private static final List<String> UUIDS = new ArrayList<>();
 
     private final IOSDevice iosDevice;
 
@@ -76,32 +80,52 @@ public class LibIMobileDevice extends EntityDriver {
 
     private final WebInspectorService webInspectorService;
 
-    public static List<String> getAllUuids() throws SDKException {
-        LOG.info("Detecting attached devices");
-        List<String> uuids = new ArrayList<>();
-        new DeviceService().startDetection(new DeviceCallBack() {
-            @Override
-            protected void onDeviceAdded(String uuid) {
-                LOG.info("uuid {}", uuid);
-                try {
-                    uuids.add(uuid);
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-
-            @Override
-            protected void onDeviceRemoved(String uuid) {
-                LOG.info("uuid {}", uuid);
-                uuids.remove(uuid);
-            }
-        });
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException ex) {
-            LOG.warn(ex.getMessage());
+    /**
+     * Gets UUID of all attached devices. Throws RuntimeException is anything goes wrong, or no device detected.
+     *
+     * @return list of UUIDs
+     */
+    public static synchronized List<String> getAllUuids() {
+        if (UUIDS.isEmpty()) {
+            loadAllUuids();
         }
-        return uuids;
+        return UUIDS;
+    }
+
+    private static void loadAllUuids() {
+        LOG.info("Detecting attached devices");
+        UUIDS.clear();
+        try {
+            DeviceService.INSTANCE.startDetection(new DeviceCallBack() {
+                @Override
+                protected void onDeviceAdded(String uuid) {
+                    LOG.info("uuid {}", uuid);
+                    try {
+                        UUIDS.add(uuid);
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+
+                @Override
+                protected void onDeviceRemoved(String uuid) {
+                    LOG.info("uuid {}", uuid);
+                    UUIDS.remove(uuid);
+                }
+            });
+            Thread.sleep(DEVICE_DETECTION_TIMEOUT_MS);
+        } catch (SDKException | InterruptedException ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            try {
+                DeviceService.INSTANCE.stopDetection();
+            } catch (SDKException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        if (UUIDS.isEmpty()) {
+            throw new RuntimeException("No device detected.");
+        }
     }
 
     public LibIMobileDevice(String udid) throws SDKException {

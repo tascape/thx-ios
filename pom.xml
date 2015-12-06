@@ -6,9 +6,11 @@
 
     <groupId>com.tascape.qa</groupId>
     <artifactId>thx-ios</artifactId>
-    <version>1.0.3</version>  
+    <version>1.0.4</version>  
     <packaging>pom</packaging>
+
     <name>thx-ios</name>
+    <description>TestHarness Extension for iOS</description>
 
     <modules>
         <module>libimobiledevice</module>
@@ -24,7 +26,6 @@
         <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
     </properties>
 
-    <description>TestHarness Extension for iOS</description>
     <url>https://github.com/tascape/thx-ios</url>
     <licenses>
         <license>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015.
+ * Copyright 2015 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.tascape.qa.th.ios.tools;
 import com.tascape.qa.th.SystemConfiguration;
 import com.tascape.qa.th.exception.EntityDriverException;
 import com.tascape.qa.th.ios.driver.UiAutomationDevice;
-import com.tascape.qa.th.ios.driver.LibIMobileDevice;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -82,6 +81,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
         this.initUi();
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     private void initUi() {
         jSplitPane.setContinuousLayout(true);
         jSplitPane.setResizeWeight(1);
@@ -148,7 +148,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
     }
 
     public void detectDevices() throws SDKException, InterruptedException {
-        List<String> uuids = LibIMobileDevice.getAllUuids();
+        List<String> uuids = UiAutomationDevice.getAllUuids();
         ComboBoxModel<String> model = new DefaultComboBoxModel<>(uuids.toArray(new String[0]));
         jcbDevices.setModel(model);
         if (model.getSize() == 0) {
@@ -208,7 +208,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
         if (StringUtils.isEmpty(js)) {
             return;
         }
-        device.sendJavaScript(js).forEach(line -> {
+        device.runJavaScript(js).forEach(line -> {
             this.appendResponse(line);
         });
     }
