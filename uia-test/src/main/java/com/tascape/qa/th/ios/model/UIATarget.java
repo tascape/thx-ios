@@ -66,25 +66,37 @@ public interface UIATarget {
 
     void dragFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException;
 
+    void dragFromToForDuration(UIAElement fromElement, UIAElement toElement, int duration) throws UIAException;
+
     void dragFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException;
 
     void doubleTap(float x, float y) throws UIAException;
+
+    void doubleTap(UIAElement element) throws UIAException;
 
     void doubleTap(String javaScript) throws UIAException;
 
     void flickFromTo(Point2D.Float from, Point2D.Float to, int duration) throws UIAException;
 
+    void flickFromTo(UIAElement fromElement, UIAElement toElement, int duration) throws UIAException;
+
     void flickFromTo(String fromJavaScript, String toJavaScript, int duration) throws UIAException;
 
     void pinchCloseFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException;
+
+    void pinchCloseFromToForDuration(UIAElement fromElement, UIAElement toElement, int duration) throws UIAException;
 
     void pinchCloseFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException;
 
     void pinchOpenFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException;
 
+    void pinchOpenFromToForDuration(UIAElement fromElement, UIAElement toElement, int duration) throws UIAException;
+
     void pinchOpenFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException;
 
     void tap(float x, float y) throws UIAException;
+
+    void tap(UIAElement element) throws UIAException;
 
     /**
      * Taps on an element specified by JavaScript.
@@ -97,6 +109,8 @@ public interface UIATarget {
     void tap(String javaScript) throws UIAException;
 
     void touchAndHold(Point2D.Float point, int duration) throws UIAException;
+
+    void touchAndHold(UIAElement element, int duration) throws UIAException;
 
     void touchAndHold(String javaScript, int duration) throws UIAException;
 

@@ -15,6 +15,7 @@
  */
 package com.tascape.qa.th.ios.driver;
 
+import com.tascape.qa.th.ios.model.UIA;
 import com.tascape.qa.th.ios.comm.JavaScriptServer;
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,7 +39,6 @@ import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Server;
 import com.tascape.qa.th.ios.comm.JavaScriptNail;
 import com.tascape.qa.th.ios.model.DeviceOrientation;
-import com.tascape.qa.th.ios.model.UIA;
 import com.tascape.qa.th.ios.model.UIAAlert;
 import com.tascape.qa.th.ios.model.UIAApplication;
 import com.tascape.qa.th.ios.model.UIAElement;
@@ -97,6 +97,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     private ESH instrumentsStreamHandler;
 
+    private Dimension screenDimension;
+
     public UiAutomationDevice() throws SDKException {
         super(getAllUuids().get(0));
     }
@@ -137,15 +139,10 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * @throws UIAException in case of any issue
      */
     public Dimension getDisplaySize() throws UIAException {
-        List<String> lines = this.runJavaScript("window.logElement();");
-        Dimension dimension = new Dimension();
-        String line = lines.stream().filter((l) -> (l.startsWith("UIAWindow"))).findFirst().get();
-        if (StringUtils.isNotEmpty(line)) {
-            String s = line.split("\\{", 2)[1].replaceAll("\\{", "").replaceAll("\\}", "");
-            String[] ds = s.split(",");
-            dimension.setSize(Integer.parseInt(ds[2].trim()), Integer.parseInt(ds[3].trim()));
+        if (screenDimension == null) {
+            screenDimension = loadDisplaySize();
         }
-        return dimension;
+        return screenDimension;
     }
 
     public List<String> logElementTree() throws UIAException {
@@ -187,6 +184,12 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
             .filter(line -> line.contains(type.getSimpleName()))
             .filter(line -> StringUtils.isEmpty(text) ? true : line.contains(text))
             .findFirst().isPresent();
+    }
+
+    public <T extends UIAElement> String getElementName(String javaScript, Class<T> type) throws UIAException {
+        String js = "var e = " + javaScript + "; e.logElement();";
+        String line = runJavaScript(js).stream().filter(l -> l.contains(type.getSimpleName())).findFirst().get();
+        return UIA.parseElement(line).name();
     }
 
     public List<String> runJavaScript(String javaScript) throws UIAException {
@@ -365,10 +368,27 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         this.runJavaScript("target.shake();");
     }
 
+    public void dragHalfScreenUp() throws UIAException {
+        Dimension dimension = this.getDisplaySize();
+        this.dragFromToForDuration(new Point2D.Float(dimension.width / 2, dimension.height / 2),
+            new Point2D.Float(dimension.width / 2, 0), 1);
+    }
+
+    public void dragHalfScreenDown() throws UIAException {
+        Dimension dimension = this.getDisplaySize();
+        this.dragFromToForDuration(new Point2D.Float(dimension.width / 2, dimension.height / 2),
+            new Point2D.Float(dimension.width / 2, dimension.height), 1);
+    }
+
     @Override
     public void dragFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
         this.runJavaScript("target.dragFromToForDuration(" + toCGString(from) + ", "
             + toCGString(to) + ", " + duration + ");");
+    }
+
+    @Override
+    public void dragFromToForDuration(UIAElement fromElement, UIAElement toElement, int duration) throws UIAException {
+        this.dragFromToForDuration(fromElement.toJavaScript(), toElement.toJavaScript(), duration);
     }
 
     @Override
@@ -383,14 +403,24 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     @Override
+    public void doubleTap(UIAElement element) throws UIAException {
+        this.doubleTap(element.toJavaScript());
+    }
+
+    @Override
     public void doubleTap(String javaScript) throws UIAException {
-        this.runJavaScript("var e = " + javaScript + "; target.doubleTap(e);");
+        this.runJavaScript("var e = " + javaScript + "; e.doubleTap();");
     }
 
     @Override
     public void flickFromTo(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
         this.runJavaScript("target.flickFromTo(" + toCGString(from) + ", " + toCGString(to)
             + ", " + duration + ");");
+    }
+
+    @Override
+    public void flickFromTo(UIAElement fromElement, UIAElement toElement, int duration) throws UIAException {
+        this.flickFromTo(fromElement.toJavaScript(), toElement.toJavaScript(), duration);
     }
 
     @Override
@@ -403,6 +433,12 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     public void pinchCloseFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
         this.runJavaScript("target.pinchCloseFromToForDuration(" + toCGString(from) + ", "
             + toCGString(to) + ", " + duration + ");");
+    }
+
+    @Override
+    public void pinchCloseFromToForDuration(UIAElement fromElement, UIAElement toElement, int duration) throws
+        UIAException {
+        this.pinchCloseFromToForDuration(fromElement.toJavaScript(), toElement.toJavaScript(), duration);
     }
 
     @Override
@@ -419,6 +455,12 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     @Override
+    public void pinchOpenFromToForDuration(UIAElement fromElement, UIAElement toElement, int duration) throws
+        UIAException {
+        this.pinchOpenFromToForDuration(fromElement.toJavaScript(), toElement.toJavaScript(), duration);
+    }
+
+    @Override
     public void pinchOpenFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException {
         this.runJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
             + "target.pinchOpenFromToForDuration(e1, e2, " + duration + ");");
@@ -430,13 +472,23 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     @Override
+    public void tap(UIAElement element) throws UIAException {
+        this.tap(element.toJavaScript());
+    }
+
+    @Override
     public void tap(String javaScript) throws UIAException {
-        this.runJavaScript("var e = " + javaScript + "; target.touchAndHold(e);");
+        this.runJavaScript("var e = " + javaScript + "; e.tap();");
     }
 
     @Override
     public void touchAndHold(Point2D.Float point, int duration) throws UIAException {
         this.runJavaScript("target.touchAndHold(" + toCGString(point) + ", " + duration + ");");
+    }
+
+    @Override
+    public void touchAndHold(UIAElement element, int duration) throws UIAException {
+        this.runJavaScript("var e = " + element.toJavaScript() + "; e.touchAndHold(e, " + duration + ");");
     }
 
     @Override
@@ -596,6 +648,18 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     private String getMessage(List<String> lines) {
         String line = lines.stream().filter(l -> StringUtils.contains(l, "Default:")).findFirst().get();
         return line.substring(line.indexOf("Default: ") + 9);
+    }
+
+    private Dimension loadDisplaySize() throws UIAException {
+        List<String> lines = this.runJavaScript("window.logElement();");
+        Dimension dimension = new Dimension();
+        String line = lines.stream().filter((l) -> (l.startsWith("UIAWindow"))).findFirst().get();
+        if (StringUtils.isNotEmpty(line)) {
+            String s = line.split("\\{", 2)[1].replaceAll("\\{", "").replaceAll("\\}", "");
+            String[] ds = s.split(",");
+            dimension.setSize(Integer.parseInt(ds[2].trim()), Integer.parseInt(ds[3].trim()));
+        }
+        return dimension;
     }
 
     public static void main(String[] args) throws SDKException {

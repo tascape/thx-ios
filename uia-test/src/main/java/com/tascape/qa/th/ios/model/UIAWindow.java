@@ -21,4 +21,7 @@ package com.tascape.qa.th.ios.model;
  */
 public class UIAWindow extends UIAElement {
 
+    public UIAElement findElement(Class<? extends UIAElement> type, String name) {
+        return super.findElement(type, name);
+    }
 }

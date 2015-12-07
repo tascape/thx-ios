@@ -59,7 +59,7 @@ public class UIA {
         return window;
     }
 
-    private static UIAElement parseElement(String line) throws UIAException {
+    public static UIAElement parseElement(String line) throws UIAException {
         Matcher m = PATTERN_UIA.matcher(line);
         if (m.matches()) {
             UIAElement e = newElement(m.group(1));
@@ -119,12 +119,16 @@ public class UIA {
                 return new UIAPopover();
             case "UIAScrollView":
                 return new UIAScrollView();
+            case "UIASegmentedControl":
+                return new UIASegmentedControl();
             case "UIASlider":
                 return new UIASlider();
             case "UIAStaticText":
                 return new UIAStaticText();
             case "UIASwitch":
                 return new UIASwitch();
+            case "UIATabBar":
+                return new UIATabBar();
             case "UIATableCell":
                 return new UIATableCell();
             case "UIATableGroup":
@@ -147,11 +151,18 @@ public class UIA {
 
     public static void main(String[] args) throws Exception {
         List<String> elementTree = IOUtils.readLines(new StringReader(TEST_TREE));
-        UIAWindow e = parseElementTree(elementTree);
-        LOG.debug("element tree\n{}", e);
+        UIAWindow w = parseElementTree(elementTree);
+        LOG.debug("element tree\n{}", w);
 
-        JSONObject json = e.toJson();
+        JSONObject json = w.toJson();
         LOG.debug("json\n{}", json.toString(4));
+
+        try {
+            UIAElement element = w.findElement(UIALink.class, "Lentil Soup");
+            LOG.debug("{}", element.toJavaScript());
+        } finally {
+            System.exit(0);
+        }
     }
 
     private static final String TEST_TREE

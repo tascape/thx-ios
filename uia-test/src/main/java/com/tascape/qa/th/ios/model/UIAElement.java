@@ -58,6 +58,18 @@ public class UIAElement {
         return parent;
     }
 
+    public String toJavaScript() {
+        List<String> list = new ArrayList<>();
+        list.add(0, "elements()[" + index + "]");
+        UIAElement element = this.parent();
+        while (!(element instanceof UIAWindow)) {
+            list.add(0, "elements()[" + element.index() + "]");
+            element = element.parent();
+        }
+        list.add(0, "window");
+        return StringUtils.join(list, ".");
+    }
+
     public JSONObject toJson() {
         JSONObject json = new JSONObject().put(this.getClass().getSimpleName(), new JSONObject()
             .put("index", index)
@@ -94,6 +106,19 @@ public class UIAElement {
 
     public String toString() {
         return StringUtils.join(logElement(), "\n");
+    }
+
+    UIAElement findElement(Class<? extends UIAElement> type, String name) {
+        if (type.equals(this.getClass()) && this.name().equals(name)) {
+            return this;
+        }
+        for (UIAElement element : elements) {
+            UIAElement e = element.findElement(type, name);
+            if (e != null) {
+                return e;
+            }
+        }
+        return null;
     }
 
     void setIndex(int index) {
