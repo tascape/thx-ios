@@ -190,12 +190,11 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
             return;
         }
 
-        device = new UiAutomationDevice(jcbDevices.getSelectedItem() + "");
-        device.start(app);
+        device =  UiAutomationDevice.newInstance(jcbDevices.getSelectedItem() + "");
+        device.start(app, 5000);
 
         this.jcbDevices.setEnabled(false);
         this.jtfApp.setEnabled(false);
-        this.jbLaunch.setEnabled(false);
         this.jbElementTree.setEnabled(true);
         this.jbSendJs.setEnabled(true);
     }

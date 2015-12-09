@@ -38,7 +38,7 @@ public abstract class AbstractIosSuite extends AbstractSuite {
     public UiAutomationDevice getAvailableDevice() throws SDKException, InterruptedException {
         String uuid = UUIDS.poll(10, TimeUnit.SECONDS);
         try {
-            return new UiAutomationDevice(uuid);
+            return  UiAutomationDevice.newInstance(uuid);
         } finally {
             UUIDS.offer(uuid);
         }

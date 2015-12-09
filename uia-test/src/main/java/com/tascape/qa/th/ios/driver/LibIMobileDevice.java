@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 class LibIMobileDevice extends EntityDriver {
     private static final Logger LOG = LoggerFactory.getLogger(LibIMobileDevice.class);
 
-    public static final int DEVICE_DETECTION_TIMEOUT_MS = 5000;
+    public static final int DEVICE_DETECTION_TIMEOUT_MS = 3000;
 
     private static final List<String> UUIDS = new ArrayList<>();
 
@@ -79,6 +79,8 @@ class LibIMobileDevice extends EntityDriver {
     private final SysLogService sysLogService;
 
     private final WebInspectorService webInspectorService;
+
+    private final String uuid;
 
     /**
      * Gets UUID of all attached devices. Throws RuntimeException is anything goes wrong, or no device detected.
@@ -128,8 +130,10 @@ class LibIMobileDevice extends EntityDriver {
         }
     }
 
-    public LibIMobileDevice(String udid) throws SDKException {
-        this.iosDevice = DeviceService.get(udid);
+    public LibIMobileDevice(String uuid) throws SDKException {
+        this.uuid = uuid;
+
+        this.iosDevice = DeviceService.get(uuid);
         this.appContainerService = new AppContainerService(iosDevice);
         this.debugService = new DebugService(iosDevice);
         this.imageMountingService = new ImageMountingService(iosDevice);
@@ -140,11 +144,14 @@ class LibIMobileDevice extends EntityDriver {
         this.sysLogService = this.iosDevice.getSysLogService();
         this.webInspectorService = new WebInspectorService(iosDevice);
 
-        LOG.debug("{}, {}, {}, dev mode {}",
+        LOG.debug("{}: {}, {}-{}", this.uuid,
             informationService.getDeviceName(),
             informationService.getDeviceType(),
-            informationService.getProductVersion(),
-            informationService.isDevModeEnabled());
+            informationService.getProductVersion());
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 
     public IOSDevice getIosDevice() {

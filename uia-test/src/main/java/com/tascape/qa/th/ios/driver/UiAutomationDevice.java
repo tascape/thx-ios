@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.martiansoftware.nailgun.NGServer;
 import com.tascape.qa.th.SystemConfiguration;
+import com.tascape.qa.th.Utils;
 import net.sf.lipermi.exception.LipeRMIException;
 import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Server;
@@ -51,7 +52,10 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.UUID;
@@ -99,34 +103,53 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     private Dimension screenDimension;
 
-    public UiAutomationDevice() throws SDKException {
+    private static final Map<String, UiAutomationDevice> DEVICE_MAP = Collections.synchronizedMap(new HashMap<>());
+
+    public static synchronized UiAutomationDevice newInstance() throws SDKException {
+        String uuid = getAllUuids().get(0);
+        return newInstance(uuid);
+    }
+
+    public static synchronized UiAutomationDevice newInstance(String uuid) throws SDKException {
+        UiAutomationDevice device = DEVICE_MAP.get(uuid);
+        if (device != null) {
+            device.stop();
+        }
+        device = new UiAutomationDevice(uuid);
+        DEVICE_MAP.put(uuid, device);
+        return device;
+    }
+
+    private UiAutomationDevice() throws SDKException {
         super(getAllUuids().get(0));
     }
 
-    public UiAutomationDevice(String uuid) throws SDKException {
+    private UiAutomationDevice(String uuid) throws SDKException {
         super(uuid);
     }
 
-    public void start(String appName) throws Exception {
-        LOG.info("Start server");
+    public void start(String appName, int delayMillis) throws Exception {
+        LOG.info("Start app {} on {}", appName, this.getUuid());
         ngServer = this.startNailGunServer();
         rmiServer = this.startRmiServer();
         instrumentsDog = this.startInstrumentsServer(appName);
         addInstrumentsStreamObserver(this);
+        Utils.sleep(delayMillis, "wait for app to start");
         runJavaScript("window.logElement();").forEach(l -> LOG.debug(l));
     }
 
     public void stop() {
-        LOG.info("Stop server ()", this.getIosDevice().getUUID());
+        if (instrumentsDog != null) {
+            LOG.info("Stop {}", this.getUuid());
+            instrumentsStreamHandler.deleteObservers();
+            instrumentsDog.stop();
+            instrumentsDog.killedProcess();
+        }
         if (ngServer != null) {
             ngServer.shutdown(false);
         }
         if (rmiServer != null) {
             rmiServer.close();
-        }
-        if (instrumentsDog != null) {
-            instrumentsDog.stop();
-            instrumentsDog.killedProcess();
         }
     }
 
@@ -665,7 +688,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     public static void main(String[] args) throws SDKException {
         UiAutomationDevice d = new UiAutomationDevice();
         try {
-            d.start("Movies");
+            d.start("Movies", 5000);
 
             LOG.debug("model {}", d.model());
         } catch (Throwable t) {

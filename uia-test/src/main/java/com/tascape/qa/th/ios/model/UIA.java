@@ -117,6 +117,8 @@ public class UIA {
                 return new UIAPicker();
             case "UIAPopover":
                 return new UIAPopover();
+            case "UIASearchBar":
+                return new UIASearchBar();
             case "UIAScrollView":
                 return new UIAScrollView();
             case "UIASegmentedControl":
