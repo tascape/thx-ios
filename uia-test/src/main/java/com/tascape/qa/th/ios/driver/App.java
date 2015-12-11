@@ -31,6 +31,8 @@ public abstract class App extends EntityDriver {
 
     public abstract String getBundleId();
 
+    public abstract int getLaunchDelayMillis();
+
     public String getVersion() {
         try {
             return uiaDevice.getAppVersion(getBundleId());
@@ -44,14 +46,7 @@ public abstract class App extends EntityDriver {
         this.uiaDevice = device;
     }
 
-    public UiAutomationDevice launch() throws Exception {
-        uiaDevice = UiAutomationDevice.newInstance(uiaDevice.getUuid());
+    public void launch() throws Exception {
         uiaDevice.start(this.getName(), getLaunchDelayMillis());
-        uiaDevice.setTest(this.getTest());
-        return uiaDevice;
-    }
-    
-    public int getLaunchDelayMillis() {
-        return 5000;
     }
 }

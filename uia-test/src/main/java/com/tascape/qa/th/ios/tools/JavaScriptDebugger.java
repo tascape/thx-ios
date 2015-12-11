@@ -190,8 +190,9 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
             return;
         }
 
-        device =  UiAutomationDevice.newInstance(jcbDevices.getSelectedItem() + "");
-        device.start(app, 5000);
+        String uuid = jcbDevices.getSelectedItem() + "";
+        device = new UiAutomationDevice(uuid);
+        device.start(appName, 5000);
 
         this.jcbDevices.setEnabled(false);
         this.jtfApp.setEnabled(false);
@@ -207,7 +208,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
         if (StringUtils.isEmpty(js)) {
             return;
         }
-        device.runJavaScript(js).forEach(line -> {
+        device.getInstruments().runJavaScript(js).forEach(line -> {
             this.appendResponse(line);
         });
     }

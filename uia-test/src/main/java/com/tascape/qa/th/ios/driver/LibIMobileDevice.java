@@ -130,7 +130,7 @@ class LibIMobileDevice extends EntityDriver {
         }
     }
 
-    public LibIMobileDevice(String uuid) throws SDKException {
+    LibIMobileDevice(String uuid) throws SDKException {
         this.uuid = uuid;
 
         this.iosDevice = DeviceService.get(uuid);
