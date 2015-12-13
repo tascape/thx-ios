@@ -6,7 +6,7 @@
 
     <groupId>com.tascape.qa</groupId>
     <artifactId>thx-ios</artifactId>
-    <version>1.0.5</version>  
+    <version>1.0.6</version>  
     <packaging>pom</packaging>
 
     <name>thx-ios</name>
@@ -14,7 +14,6 @@
 
     <modules>
         <module>libimobiledevice</module>
-        <module>nailgun-server</module>
         <module>uia-test</module>
     </modules>
 
@@ -44,7 +43,7 @@
     <scm>
         <connection>scm:git:git@github.com:tascape/thx-ios.git</connection>
         <developerConnection>scm:git:git@github.com:tascape/thx-ios.git</developerConnection>
-        <url>git:git@github.com:juven/thx-ios.git</url>
+        <url>git:git@github.com:tascape/thx-ios.git</url>
     </scm>
     
     <build>

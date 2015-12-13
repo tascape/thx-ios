@@ -7,11 +7,12 @@
     <parent>
         <groupId>com.tascape.qa</groupId>
         <artifactId>thx-ios</artifactId>
-        <version>1.0.5</version>
+        <version>1.0.6</version>
     </parent>
     <groupId>com.tascape.qa</groupId>
     <artifactId>thx-ios-uiat</artifactId>
     <version>1.0.9</version>
+    <packaging>jar</packaging>
 
     <name>thx-ios-uiat</name>
     <description>uiautomation test</description>
@@ -25,19 +26,21 @@
         </dependency>
         <dependency>
             <groupId>com.tascape.qa</groupId>
-            <artifactId>thx-ios-nailgun</artifactId>
-            <version>1.0.1</version>
+            <artifactId>th-nailgun</artifactId>
+            <version>1.0.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.tascape.qa</groupId>
-            <artifactId>thx-android-lipermi</artifactId>
-            <version>1.0.3</version>
+            <artifactId>th-lipermi</artifactId>
+            <version>1.0.0</version>
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.tascape.qa</groupId>
             <artifactId>testharness</artifactId>
             <version>1.0.41</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 </project>
