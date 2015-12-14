@@ -51,7 +51,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     public static final String TRACE_TEMPLATE = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents"
         + "/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
 
-    public static final int JAVASCRIPT_TIMEOUT_SECOND
+    public static final int TIMEOUT_SECOND
         = SystemConfiguration.getInstance().getIntProperty(SYSPROP_TIMEOUT_SECOND, 30);
 
     private Instruments instruments;
@@ -122,25 +122,69 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     /**
-     * Checks if an element exists on current UI, based on element type and text.
+     * Checks if an element exists on current UI, based on element type and name.
      *
      * @param <T>        sub-class of UIAElement
      * @param javaScript the javascript that uniquely identify the element, such as "window.tabBars()['MainTabBar']",
      *                   or "window.elements()[1].buttons()[0]"
      * @param type       type of uia element, such as UIATabBar
-     * @param text       text of an element, such as "MainTabBar"
+     * @param name       name of an element, such as "MainTabBar"
      *
      * @return true if element identified by javascript exists
      *
      * @throws UIAException in case of any issue
      */
-    public <T extends UIAElement> boolean doesElementExist(String javaScript, Class<T> type, String text) throws
+    public <T extends UIAElement> boolean doesElementExist(String javaScript, Class<T> type, String name) throws
         UIAException {
         String js = "var e = " + javaScript + "; e.logElement();";
         return instruments.runJavaScript(js).stream()
             .filter(line -> line.contains(type.getSimpleName()))
-            .filter(line -> StringUtils.isEmpty(text) ? true : line.contains(text))
+            .filter(line -> StringUtils.isEmpty(name) ? true : line.contains(name))
             .findFirst().isPresent();
+    }
+
+    /**
+     * Waits for an element exists on current UI, based on element type.
+     *
+     * @param <T>        sub-class of UIAElement
+     * @param javaScript the javascript that uniquely identify the element, such as "window.tabBars()['MainTabBar']",
+     *                   or "window.elements()[1].buttons()[0]"
+     * @param type       type of uia element, such as UIATabBar
+     *
+     * @return true if element identified by javascript exists, or false if timeout
+     *
+     * @throws UIAException                   in case of UIA issue
+     * @throws java.lang.InterruptedException in case of interruption
+     */
+    public <T extends UIAElement> boolean waitForElement(String javaScript, Class<T> type)
+        throws UIAException, InterruptedException {
+        return this.waitForElement(javaScript, type, null);
+    }
+
+    /**
+     * Waits for an element exists on current UI, based on element type and name.
+     *
+     * @param <T>        sub-class of UIAElement
+     * @param javaScript the javascript that uniquely identify the element, such as "window.tabBars()['MainTabBar']",
+     *                   or "window.elements()[1].buttons()[0]"
+     * @param type       type of uia element, such as UIATabBar
+     * @param name       name of an element, such as "MainTabBar"
+     *
+     * @return true if element identified by javascript exists, or false if timeout
+     *
+     * @throws UIAException                   in case of UIA issue
+     * @throws java.lang.InterruptedException in case of interruption
+     */
+    public <T extends UIAElement> boolean waitForElement(String javaScript, Class<T> type, String name)
+        throws UIAException, InterruptedException {
+        long end = System.currentTimeMillis() + TIMEOUT_SECOND * 1000;
+        while (System.currentTimeMillis() < end) {
+            if (doesElementExist(javaScript, type, name)) {
+                return true;
+            }
+            Utils.sleep(1000, "wait for " + type + "[" + name + "]");
+        }
+        return false;
     }
 
     public <T extends UIAElement> String getElementName(String javaScript, Class<T> type) throws UIAException {
