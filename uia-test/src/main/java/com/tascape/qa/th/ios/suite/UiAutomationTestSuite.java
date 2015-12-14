@@ -15,10 +15,7 @@
  */
 package com.tascape.qa.th.ios.suite;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.tascape.qa.th.ios.driver.UiAutomationDevice;
-import com.tascape.qa.th.suite.AbstractSuite;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -29,23 +26,17 @@ import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
  *
  * @author linsong wang
  */
-public abstract class AbstractIosSuite extends AbstractSuite {
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractIosSuite.class);
+public interface UiAutomationTestSuite {
 
-    protected static final BlockingQueue<String> UUIDS
+    BlockingQueue<String> UUIDS
         = new ArrayBlockingQueue<>(UiAutomationDevice.getAllUuids().size(), true, UiAutomationDevice.getAllUuids());
 
-    public UiAutomationDevice getAvailableDevice() throws SDKException, InterruptedException {
+    default UiAutomationDevice getAvailableDevice() throws SDKException, InterruptedException {
         String uuid = UUIDS.poll(10, TimeUnit.SECONDS);
         try {
-            return  new UiAutomationDevice(uuid);
+            return new UiAutomationDevice(uuid);
         } finally {
             UUIDS.offer(uuid);
         }
-    }
-
-    @Override
-    public int getNumberOfEnvs() {
-        return UUIDS.size();
     }
 }
