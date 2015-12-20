@@ -15,13 +15,35 @@
  */
 package com.tascape.qa.th.ios.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * @author linsong wang
  */
 public class UIAWindow extends UIAElement {
+    private static final Logger LOG = LoggerFactory.getLogger(UIAWindow.class);
 
-    public UIAElement findElement(Class<? extends UIAElement> type, String name) {
-        return super.findElement(type, name);
+    @Override
+    public <T extends UIAElement> T findElement(Class<T> type, String name) {
+        LOG.debug("Look for {}['{}']", type.getSimpleName(), name);
+        return type.cast(super.findElement(type, name));
+    }
+
+    public UIAButton findButton(String name) {
+        return this.findElement(UIAButton.class, name);
+    }
+
+    public UIAStaticText findStaticText(String name) {
+        return this.findElement(UIAStaticText.class, name);
+    }
+
+    public UIATextView findTextView(String name) {
+        return this.findElement(UIATextView.class, name);
+    }
+
+    public UIALink findLink(String name) {
+        return this.findElement(UIALink.class, name);
     }
 }

@@ -102,10 +102,6 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         return screenDimension;
     }
 
-    public List<String> logElementTree() throws UIAException {
-        return instruments.runJavaScript("window.logElementTree();");
-    }
-
     /**
      * Checks if an element exists on current UI, based on element type.
      *
@@ -141,6 +137,21 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
             .filter(line -> line.contains(type.getSimpleName()))
             .filter(line -> StringUtils.isEmpty(name) ? true : line.contains(name))
             .findFirst().isPresent();
+    }
+
+    /**
+     * Checks if an element exists on current UI, based on element type and name. This method loads full element tree.
+     *
+     * @param <T>  sub-class of UIAElement
+     * @param type type of uia element, such as UIATabBar
+     * @param name name of an element, such as "MainTabBar"
+     *
+     * @return true if element identified by type and name exists, or false if timeout
+     *
+     * @throws UIAException in case of any issue
+     */
+    public <T extends UIAElement> boolean doesElementExist(Class<T> type, String name) throws UIAException {
+        return mainWindow().findElement(type, name) != null;
     }
 
     /**
@@ -187,6 +198,30 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         return false;
     }
 
+    /**
+     * Waits for an element exists on current UI, based on element type and name. This method loads full element tree.
+     *
+     * @param <T>  sub-class of UIAElement
+     * @param type type of uia element, such as UIATabBar
+     * @param name name of an element, such as "MainTabBar"
+     *
+     * @return true if element identified by type and name exists, or false if timeout
+     *
+     * @throws UIAException                   in case of UIA issue
+     * @throws java.lang.InterruptedException in case of interruption
+     */
+    public <T extends UIAElement> boolean waitForElement(Class<T> type, String name)
+        throws UIAException, InterruptedException {
+        long end = System.currentTimeMillis() + TIMEOUT_SECOND * 1000;
+        while (System.currentTimeMillis() < end) {
+            if (mainWindow().findElement(type, name) != null) {
+                return true;
+            }
+            Utils.sleep(1000, "wait for " + type + "[" + name + "]");
+        }
+        return false;
+    }
+
     public <T extends UIAElement> String getElementName(String javaScript, Class<T> type) throws UIAException {
         String js = "var e = " + javaScript + "; e.logElement();";
         String line = instruments.runJavaScript(js).stream().filter(l -> l.contains(type.getSimpleName())).findFirst()
@@ -196,7 +231,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     @Override
     public UIAWindow mainWindow() throws UIAException {
-        List<String> lines = logElementTree();
+        List<String> lines = instruments.loadElementTree();
         return UIA.parseElementTree(lines);
     }
 

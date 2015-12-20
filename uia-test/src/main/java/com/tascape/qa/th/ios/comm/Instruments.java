@@ -127,8 +127,12 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         }
     }
 
-    public List<String> logElementTree() throws UIAException {
+    public List<String> loadElementTree() throws UIAException {
         return this.runJavaScript("window.logElementTree();");
+    }
+
+    public void logElementTree() throws UIAException {
+        this.runJavaScript("window.logElementTree();").forEach(l -> LOG.debug(l));
     }
 
     public <T extends UIAElement> String getElementName(String javaScript, Class<T> type) throws UIAException {
@@ -195,8 +199,6 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         lines.forEach(l -> {
             if (l.contains(INSTRUMENTS_ERROR)) {
                 LOG.warn(l);
-            } else {
-                LOG.debug(l);
             }
         });
         if (lines.stream().filter(l -> l.contains(INSTRUMENTS_ERROR)).findAny().isPresent()) {

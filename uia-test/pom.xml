@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.tascape.qa</groupId>
     <artifactId>thx-ios-uiat</artifactId>
-    <version>1.0.10</version>
+    <version>1.0.11</version>
     <packaging>jar</packaging>
 
     <name>thx-ios-uiat</name>

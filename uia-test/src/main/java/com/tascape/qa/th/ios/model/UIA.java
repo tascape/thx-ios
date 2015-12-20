@@ -160,10 +160,12 @@ public class UIA {
         LOG.debug("json\n{}", json.toString(4));
 
         try {
-            UIAElement element = w.findElement(UIALink.class, "Lentil Soup");
+            UIAElement element = w.findElement(UIAStaticText.class, "Recipes");
             LOG.debug("{}", element.toJavaScript());
-        } finally {
-            System.exit(0);
+            LOG.debug("{}", element.toJson().toString(2));
+            LOG.debug("{}", element.toString());
+        } catch (Exception ex) {
+            LOG.error("", ex);
         }
     }
 

@@ -171,7 +171,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
             } else if (e.getSource() == jbSendJs) {
                 this.sendJavaScript();
             } else if (e.getSource() == jbElementTree) {
-                device.logElementTree().forEach(line -> {
+                device.getInstruments().loadElementTree().forEach(line -> {
                     this.appendResponse(line);
                 });
             } else if (e.getSource() == jbClear) {

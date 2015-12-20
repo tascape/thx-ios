@@ -108,17 +108,17 @@ public class UIAElement {
         return StringUtils.join(logElement(), "\n");
     }
 
-    UIAElement findElement(Class<? extends UIAElement> type, String name) {
+    <T extends UIAElement> T findElement(Class<T> type, String name) {
         if (type.equals(this.getClass()) && this.name().equals(name)) {
-            return this;
+            return type.cast(this);
         }
         for (UIAElement element : elements) {
             UIAElement e = element.findElement(type, name);
             if (e != null) {
-                return e;
+                return type.cast(e);
             }
         }
-        return null;
+        return type.cast(null);
     }
 
     void setIndex(int index) {
