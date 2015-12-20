@@ -192,7 +192,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
 
         String uuid = jcbDevices.getSelectedItem() + "";
         device = new UiAutomationDevice(uuid);
-        device.start(appName, 5000);
+        device.start(app, 5000);
 
         this.jcbDevices.setEnabled(false);
         this.jtfApp.setEnabled(false);
