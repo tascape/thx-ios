@@ -470,6 +470,10 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public void logElementTree() throws UIAException {
+        mainWindow().logElement().forEach(l -> LOG.debug(l));
+    }
+
     public Instruments getInstruments() {
         return instruments;
     }

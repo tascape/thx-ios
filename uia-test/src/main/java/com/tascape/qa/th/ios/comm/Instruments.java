@@ -65,6 +65,8 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
 
     public static final String INSTRUMENTS_ERROR = "Error:";
 
+    public static final String DEVICE_LOCK_ERROR = "Target failed to run: Device is currently locked with a passcode.";
+
     public static final String INSTRUMENTS_FAIL = "Fail: The target application appears to have died";
 
     public static final String TRACE_TEMPLATE = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents"
@@ -108,7 +110,6 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         ngServer = this.startNailGunServer();
         rmiServer = this.startRmiServer();
         instrumentsDog = this.startInstrumentsServer(appName);
-        addInstrumentsStreamObserver(this);
     }
 
     public void disconnect() {
@@ -164,7 +165,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
                 throw new UIAException("no response from device");
             }
             LOG.trace(res);
-            if (res.contains(INSTRUMENTS_FAIL)) {
+            if (res.contains(INSTRUMENTS_FAIL) || res.contains(DEVICE_LOCK_ERROR)) {
                 throw new UIAException(res);
             }
             if (res.contains(reqId + " start")) {
@@ -301,6 +302,8 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         executor.setStreamHandler(instrumentsStreamHandler);
         executor.execute(cmdLine, new DefaultExecuteResultHandler());
         return watchdog;
+
+        //todo: detect initial instruments errors
     }
 
     private class ESH extends Observable implements ExecuteStreamHandler {
@@ -312,14 +315,14 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         @Override
         public void setProcessErrorStream(InputStream in) throws IOException {
             BufferedReader bis = new BufferedReader(new InputStreamReader(in));
-            do {
+            while (true) {
                 String line = bis.readLine();
                 if (line == null) {
                     break;
                 }
                 LOG.error(line);
-                this.notifyObserversX("ERROR " + line);
-            } while (true);
+                this.notifyObserversX("iERROR " + line);
+            }
         }
 
         @Override
