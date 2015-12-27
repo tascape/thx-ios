@@ -58,6 +58,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     private Dimension screenDimension;
 
+    private String alertHandler = "";
+
     public UiAutomationDevice() throws SDKException {
         this(LibIMobileDevice.getAllUuids().get(0));
     }
@@ -72,6 +74,9 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
             instruments.disconnect();
         }
         instruments = new Instruments(getUuid(), appName);
+        if (StringUtils.isNotEmpty(alertHandler)) {
+            instruments.setPreTargetJavaScript(alertHandler);
+        }
         instruments.connect();
         Utils.sleep(delayMillis, "Wait for app to start");
         instruments.runJavaScript("window.logElement();").forEach(l -> LOG.debug(l));
@@ -81,6 +86,10 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         if (instruments != null) {
             instruments.disconnect();
         }
+    }
+
+    public void setAlertHandler(String javaScript) {
+        this.alertHandler = javaScript;
     }
 
     public List<String> runJavaScript(String javaScript) throws UIAException {
@@ -416,6 +425,11 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         this.instruments.runJavaScript("target.tap(" + toCGString(x, y) + ");");
     }
 
+    public void tap(Class<? extends UIAElement> type, String name) throws UIAException {
+        UIAElement element = this.mainWindow().findElement(type, name);
+        this.tap(element);
+    }
+
     @Override
     public void tap(UIAElement element) throws UIAException {
         this.tap(element.toJavaScript());
@@ -456,6 +470,13 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         this.instruments.runJavaScript("target.setTimeout(" + timeout + ");");
     }
 
+    /**
+     * Unsupported yet.
+     *
+     * @return int
+     *
+     * @throws UIAException in case of any issue
+     */
     @Override
     public int timeout() throws UIAException {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -465,9 +486,22 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         this.instruments.runJavaScript("target.delay(" + timeInterval + ");");
     }
 
+    /**
+     * Unsupported yet.
+     *
+     * @param alert alert object
+     *
+     * @return true/false
+     *
+     * @throws UIAException in case of any issue
+     */
     @Override
     public boolean onAlert(UIAAlert alert) throws UIAException {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setAlertAutoDismiss() throws UIAException {
+        this.alertHandler = "UIATarget.onAlert = function onAlert(alert) {alert.logElement(); return false;}";
     }
 
     public void logElementTree() throws UIAException {

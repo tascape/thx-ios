@@ -15,6 +15,7 @@
  */
 package com.tascape.qa.th.ios.comm;
 
+import com.google.common.collect.Lists;
 import com.tascape.qa.th.ios.model.UIA;
 import java.io.BufferedReader;
 import java.io.File;
@@ -65,10 +66,6 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
 
     public static final String INSTRUMENTS_ERROR = "Error:";
 
-    public static final String DEVICE_LOCK_ERROR = "Target failed to run: Device is currently locked with a passcode.";
-
-    public static final String INSTRUMENTS_FAIL = "Fail: The target application appears to have died";
-
     public static final String TRACE_TEMPLATE = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents"
         + "/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
 
@@ -95,6 +92,8 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
 
     private final String appName;
 
+    private String preTargetJavaScript = "";
+
     public static String getLogMessage(List<String> lines) {
         String line = lines.stream().filter(l -> StringUtils.contains(l, "Default:")).findFirst().get();
         return line.substring(line.indexOf("Default: ") + 9);
@@ -103,6 +102,10 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     public Instruments(String uuid, String appName) throws SDKException {
         this.uuid = uuid;
         this.appName = appName;
+    }
+
+    public void setPreTargetJavaScript(String javaScript) {
+        this.preTargetJavaScript = javaScript;
     }
 
     public void connect() throws Exception {
@@ -165,9 +168,6 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
                 throw new UIAException("no response from device");
             }
             LOG.trace(res);
-            if (res.contains(INSTRUMENTS_FAIL) || res.contains(DEVICE_LOCK_ERROR)) {
-                throw new UIAException(res);
-            }
             if (res.contains(reqId + " start")) {
                 break;
             }
@@ -183,25 +183,23 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             if (res == null) {
                 throw new UIAException("no response from device");
             }
-            LOG.trace(res);
-            if (res.contains(INSTRUMENTS_FAIL)) {
-                throw new UIAException(res);
-            }
             if (res.contains(reqId + " start")) {
+                LOG.trace(res);
                 continue;
             }
             if (res.contains(reqId + " stop")) {
+                LOG.trace(res);
                 break;
             } else {
                 lines.add(res);
             }
+            if (res.contains(INSTRUMENTS_ERROR)) {
+                LOG.error(res);
+            } else {
+                LOG.debug(res);
+            }
         }
         javaScriptQueue.clear();
-        lines.forEach(l -> {
-            if (l.contains(INSTRUMENTS_ERROR)) {
-                LOG.warn(l);
-            }
-        });
         if (lines.stream().filter(l -> l.contains(INSTRUMENTS_ERROR)).findAny().isPresent()) {
             throw new UIAException("instruments error");
         }
@@ -260,8 +258,9 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         return rmis;
     }
 
-    private ExecuteWatchdog startInstrumentsServer(String appName) throws IOException {
+    private ExecuteWatchdog startInstrumentsServer(String appName) throws IOException, InterruptedException {
         StringBuilder sb = new StringBuilder()
+            .append(this.preTargetJavaScript).append("\n")
             .append("while (1) {\n")
             .append("  var target = UIATarget.localTarget();\n")
             .append("  var host = target.host();\n")
@@ -274,7 +273,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             .append("  try {\n")
             .append("    var res = eval(js.stdout);\n")
             .append("  } catch(err) {\n")
-            .append("    UIALogger.logError(err);\n")
+            .append("    UIALogger.logError(err.message);\n")
             .append("  }\n")
             .append("}\n");
         File js = File.createTempFile("instruments-", ".js");
@@ -301,12 +300,31 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         instrumentsStreamHandler.addObserver(this);
         executor.setStreamHandler(instrumentsStreamHandler);
         executor.execute(cmdLine, new DefaultExecuteResultHandler());
-        return watchdog;
 
-        //todo: detect initial instruments errors
+        Utils.sleep(3000, "wait for instruments to start");
+        if (instrumentsStreamHandler.errorToStart()) {
+            this.disconnect();
+            throw new IOException("Failed to start Instruments");
+        }
+
+        return watchdog;
     }
 
+    private static final List<String> START_ERRORS = Lists.newArrayList(new String[]{
+        "Target failed to run: Device is currently locked with a passcode.",
+        "Instruments Usage Error : Specified target process is invalid:",
+        "Fail: The target application appears to have died"
+    });
+
+    private static final List<String> WARNINGS = Lists.newArrayList(new String[]{
+        "WebKit Threading Violation - initial use of WebKit from a secondary thread.",
+        "<Error>: CGImageCreateWithImageProvider: invalid image size:",
+        "Attempting to change event horizon while disengage"
+    });
+
     private class ESH extends Observable implements ExecuteStreamHandler {
+        private boolean errorToStart = false;
+
         @Override
         public void setProcessInputStream(OutputStream out) throws IOException {
             LOG.trace("setProcessInputStream");
@@ -320,8 +338,16 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
                 if (line == null) {
                     break;
                 }
-                LOG.error(line);
-                this.notifyObserversX("iERROR " + line);
+                if (isErrorToStart(line)) {
+                    errorToStart = true;
+                }
+                if (isError(line)) {
+                    LOG.error(line);
+                    this.notifyObserversX("iERROR " + line);
+                } else {
+                    LOG.warn(line);
+                    this.notifyObserversX(line);
+                }
             }
         }
 
@@ -346,6 +372,28 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         @Override
         public void stop() {
             LOG.trace("stop");
+        }
+
+        public boolean errorToStart() {
+            return errorToStart;
+        }
+
+        private boolean isErrorToStart(String line) {
+            for (String w : START_ERRORS) {
+                if (line.contains(w)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean isError(String line) {
+            for (String w : WARNINGS) {
+                if (line.contains(w)) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private void notifyObserversX(String line) {

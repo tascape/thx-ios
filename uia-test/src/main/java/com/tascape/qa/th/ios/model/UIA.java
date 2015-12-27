@@ -97,6 +97,8 @@ public class UIA {
 
     private static UIAElement newElement(String uia) {
         switch (uia) {
+            case "UIAAlert":
+                return new UIAAlert();
             case "UIAButton":
                 return new UIAButton();
             case "UIACollectionCell":
