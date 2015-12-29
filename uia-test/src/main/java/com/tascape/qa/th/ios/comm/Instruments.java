@@ -72,6 +72,8 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     public static final int JAVASCRIPT_TIMEOUT_SECOND
         = SystemConfiguration.getInstance().getIntProperty(SYSPROP_TIMEOUT_SECOND, 30);
 
+    private static final String INSTRUMENTS_POISON = UUID.randomUUID().toString();
+
     private final SynchronousQueue<String> javaScriptQueue = new SynchronousQueue<>();
 
     private final BlockingQueue<String> responseQueue = new ArrayBlockingQueue<>(5000);
@@ -146,6 +148,10 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     }
 
     public List<String> runJavaScript(String javaScript) throws UIAException {
+        if (responseQueue.contains(INSTRUMENTS_POISON)) {
+            throw new UIAException("Instruments error");
+        }
+        responseQueue.clear();
         String reqId = UUID.randomUUID().toString();
         LOG.trace("sending js {}", javaScript);
         try {
@@ -300,13 +306,6 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         instrumentsStreamHandler.addObserver(this);
         executor.setStreamHandler(instrumentsStreamHandler);
         executor.execute(cmdLine, new DefaultExecuteResultHandler());
-
-        Utils.sleep(3000, "wait for instruments to start");
-        if (instrumentsStreamHandler.errorToStart()) {
-            this.disconnect();
-            throw new IOException("Failed to start Instruments");
-        }
-
         return watchdog;
     }
 
@@ -323,7 +322,6 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     });
 
     private class ESH extends Observable implements ExecuteStreamHandler {
-        private boolean errorToStart = false;
 
         @Override
         public void setProcessInputStream(OutputStream out) throws IOException {
@@ -339,7 +337,11 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
                     break;
                 }
                 if (isErrorToStart(line)) {
-                    errorToStart = true;
+                    try {
+                        Instruments.this.responseQueue.put(INSTRUMENTS_POISON);
+                    } catch (InterruptedException ex) {
+                        LOG.error("interrupted", ex);
+                    }
                 }
                 if (isError(line)) {
                     LOG.error(line);
@@ -374,26 +376,12 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             LOG.trace("stop");
         }
 
-        public boolean errorToStart() {
-            return errorToStart;
-        }
-
         private boolean isErrorToStart(String line) {
-            for (String w : START_ERRORS) {
-                if (line.contains(w)) {
-                    return true;
-                }
-            }
-            return false;
+            return START_ERRORS.stream().anyMatch((error) -> (line.contains(error)));
         }
 
         private boolean isError(String line) {
-            for (String w : WARNINGS) {
-                if (line.contains(w)) {
-                    return false;
-                }
-            }
-            return true;
+            return WARNINGS.stream().noneMatch((warn) -> (line.contains(warn)));
         }
 
         private void notifyObserversX(String line) {

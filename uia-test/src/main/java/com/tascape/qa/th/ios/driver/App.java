@@ -44,10 +44,15 @@ public abstract class App extends EntityDriver {
 
     public void attachTo(UiAutomationDevice device) throws Exception {
         this.uiaDevice = device;
-        this.reLaunch();
+        this.launch();
     }
 
-    public void reLaunch() throws Exception {
-        uiaDevice.start(this.getName(), getLaunchDelayMillis());
+    public void launch() throws Exception {
+        try {
+            uiaDevice.start(this.getName(), getLaunchDelayMillis());
+        } catch (Exception ex) {
+            uiaDevice.stop();
+            throw ex;
+        }
     }
 }
