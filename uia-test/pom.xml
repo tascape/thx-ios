@@ -42,5 +42,22 @@
             <version>1.0.41</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>de.sciss</groupId>
+            <artifactId>weblaf-core</artifactId>
+            <version>1.28</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>de.sciss</groupId>
+            <artifactId>weblaf-ui</artifactId>
+            <version>1.28</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

@@ -233,9 +233,20 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     public <T extends UIAElement> String getElementName(String javaScript, Class<T> type) throws UIAException {
         String js = "var e = " + javaScript + "; e.logElement();";
-        String line = instruments.runJavaScript(js).stream().filter(l -> l.contains(type.getSimpleName())).findFirst()
-            .get();
+        String line = instruments.runJavaScript(js).stream()
+            .filter(l -> l.contains(type.getSimpleName())).findFirst().get();
         return UIA.parseElement(line).name();
+    }
+
+    public <T extends UIAElement> String getElementValue(String javaScript, Class<T> type) throws UIAException {
+        String js = "var e = " + javaScript + "; UIALogger.logMessage(e.value());";
+        String line = instruments.runJavaScript(js).stream().filter(l -> l.contains("Default: ")).findFirst().get();
+        return line.substring(line.indexOf("Default: ") + 9);
+    }
+
+    public void setTextField(String javaScript, String value) throws UIAException {
+        String js = "var e = " + javaScript + "; e.setValue('" + value + "');";
+        instruments.runJavaScript(js).forEach(l -> LOG.trace(l));
     }
 
     @Override
