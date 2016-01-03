@@ -7,11 +7,11 @@
     <parent>
         <groupId>com.tascape.qa</groupId>
         <artifactId>thx-ios</artifactId>
-        <version>1.0.6</version>
+        <version>1.1.0</version>
     </parent>
     <groupId>com.tascape.qa</groupId>
     <artifactId>thx-ios-uiat</artifactId>
-    <version>1.0.12</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>thx-ios-uiat</name>
@@ -21,7 +21,7 @@
         <dependency>
             <groupId>com.tascape.qa</groupId>
             <artifactId>thx-ios-libimobiledevice</artifactId>
-            <version>1.0.2</version>
+            <version>1.1.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -39,13 +39,14 @@
         <dependency>
             <groupId>com.tascape.qa</groupId>
             <artifactId>testharness</artifactId>
-            <version>1.0.41</version>
+            <version>1.1.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>de.sciss</groupId>
             <artifactId>weblaf-core</artifactId>
             <version>1.28</version>
+            <type>jar</type>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

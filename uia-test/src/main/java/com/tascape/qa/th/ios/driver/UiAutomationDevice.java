@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 tascape.
+ * Copyright 2016 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import org.apache.commons.lang3.StringUtils;
 public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, UIAApplication {
     private static final Logger LOG = LoggerFactory.getLogger(UiAutomationDevice.class);
 
-    public static final String SYSPROP_TIMEOUT_SECOND = "qa.th.comm.ios.TIMEOUT_SECOND";
+    public static final String SYSPROP_TIMEOUT_SECOND = "qa.th.driver.ios.TIMEOUT_SECOND";
 
     public static final String INSTRUMENTS_ERROR = "Error:";
 

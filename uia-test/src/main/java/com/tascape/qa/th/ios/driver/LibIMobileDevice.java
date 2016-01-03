@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 tascape.
+ * Copyright 2016 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.tascape.qa.th.ios.driver;
 
+import com.google.common.collect.Lists;
 import com.tascape.qa.th.SystemConfiguration;
 import com.tascape.qa.th.driver.EntityDriver;
 import com.tascape.qa.th.exception.EntityDriverException;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.lang3.StringUtils;
 import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
 import org.libimobiledevice.ios.driver.binding.model.ApplicationInfo;
 import org.libimobiledevice.ios.driver.binding.model.ProvisioningProfileInfo;
@@ -55,6 +57,8 @@ class LibIMobileDevice extends EntityDriver {
     private static final Logger LOG = LoggerFactory.getLogger(LibIMobileDevice.class);
 
     public static final int DEVICE_DETECTION_TIMEOUT_MS = 3000;
+
+    public static final String SYSPROP_UUIDS = "qa.th.driver.ios.UUIDS";
 
     private static final List<String> UUIDS = new ArrayList<>();
 
@@ -95,34 +99,41 @@ class LibIMobileDevice extends EntityDriver {
     }
 
     private static void loadAllUuids() {
-        LOG.info("Detecting attached devices");
         UUIDS.clear();
-        try {
-            DeviceService.INSTANCE.startDetection(new DeviceCallBack() {
-                @Override
-                protected void onDeviceAdded(String uuid) {
-                    LOG.info("uuid {}", uuid);
-                    try {
-                        UUIDS.add(uuid);
-                    } catch (Exception ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
 
-                @Override
-                protected void onDeviceRemoved(String uuid) {
-                    LOG.info("uuid {}", uuid);
-                    UUIDS.remove(uuid);
-                }
-            });
-            Thread.sleep(DEVICE_DETECTION_TIMEOUT_MS);
-        } catch (SDKException | InterruptedException ex) {
-            throw new RuntimeException(ex);
-        } finally {
+        String ids = SystemConfiguration.getInstance().getProperty(SYSPROP_UUIDS);
+        if (StringUtils.isNotBlank(ids)) {
+            LOG.info("Use specified devices from system property {}={}", SYSPROP_UUIDS, ids);
+            UUIDS.addAll(Lists.newArrayList(ids.split(",")));
+        } else {
+            LOG.info("Detect attached devices");
             try {
-                DeviceService.INSTANCE.stopDetection();
-            } catch (SDKException ex) {
+                DeviceService.INSTANCE.startDetection(new DeviceCallBack() {
+                    @Override
+                    protected void onDeviceAdded(String uuid) {
+                        LOG.info("uuid {}", uuid);
+                        try {
+                            UUIDS.add(uuid);
+                        } catch (Exception ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+
+                    @Override
+                    protected void onDeviceRemoved(String uuid) {
+                        LOG.info("uuid {}", uuid);
+                        UUIDS.remove(uuid);
+                    }
+                });
+                Thread.sleep(DEVICE_DETECTION_TIMEOUT_MS);
+            } catch (SDKException | InterruptedException ex) {
                 throw new RuntimeException(ex);
+            } finally {
+                try {
+                    DeviceService.INSTANCE.stopDetection();
+                } catch (SDKException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         }
         if (UUIDS.isEmpty()) {
