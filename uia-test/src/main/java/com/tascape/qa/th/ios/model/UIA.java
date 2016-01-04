@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 tascape.
+ * Copyright 2016 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,12 +117,16 @@ public class UIA {
                 return new UIAPageIndicator();
             case "UIAPicker":
                 return new UIAPicker();
+            case "UIAPickerWheel":
+                return new UIAPickerWheel();
             case "UIAPopover":
                 return new UIAPopover();
             case "UIASearchBar":
                 return new UIASearchBar();
             case "UIAScrollView":
                 return new UIAScrollView();
+            case "UIASecureTextField":
+                return new UIASecureTextField();
             case "UIASegmentedControl":
                 return new UIASegmentedControl();
             case "UIASlider":

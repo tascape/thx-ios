@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 tascape.
+ * Copyright 2016 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.tascape.qa.th.ios.model;
 
+import com.tascape.qa.th.ios.comm.Instruments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +25,11 @@ import org.slf4j.LoggerFactory;
  */
 public class UIAWindow extends UIAElement {
     private static final Logger LOG = LoggerFactory.getLogger(UIAWindow.class);
+
+    @Override
+    public void setInstruments(Instruments instruments) {
+        super.setInstruments(instruments);
+    }
 
     @Override
     public <T extends UIAElement> T findElement(Class<T> type, String name) {

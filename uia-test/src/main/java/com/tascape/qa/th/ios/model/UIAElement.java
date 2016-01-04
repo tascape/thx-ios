@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 tascape.
+ * Copyright 2016 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.tascape.qa.th.ios.model;
 
+import com.tascape.qa.th.ios.comm.Instruments;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,8 @@ public class UIAElement {
 
     private UIAElement parent;
 
+    private Instruments instruments;
+
     public int index() {
         return index;
     }
@@ -56,6 +59,11 @@ public class UIAElement {
 
     public UIAElement parent() {
         return parent;
+    }
+
+    public String value() throws UIAException {
+        String js = "var e = " + toJavaScript() + "; UIALogger.logMessage(e.value());";
+        return Instruments.getLogMessage(instruments.runJavaScript(js));
     }
 
     public String toJavaScript() {
@@ -90,7 +98,7 @@ public class UIAElement {
 
     public List<String> logElement() {
         List<String> lines = new ArrayList<>();
-        lines.add(String.format("%s %d \"%s\" [x=%f,y=%s,w=%f,h=%f]", getClass().getSimpleName(), index, name,
+        lines.add(String.format("%s %d \"%s\" [x=%s,y=%s,w=%s,h=%s]", getClass().getSimpleName(), index, name,
             rect.x, rect.y, rect.width, rect.height));
         if (!elements.isEmpty()) {
             lines.add("elements: (" + elements.size() + ") {");
@@ -106,6 +114,15 @@ public class UIAElement {
 
     public String toString() {
         return StringUtils.join(logElement(), "\n");
+    }
+
+    Instruments getInstruments() {
+        return instruments;
+    }
+
+    void setInstruments(Instruments instruments) {
+        this.instruments = instruments;
+        this.elements.forEach((UIAElement e) -> e.setInstruments(instruments));
     }
 
     <T extends UIAElement> T findElement(Class<T> type, String name) {

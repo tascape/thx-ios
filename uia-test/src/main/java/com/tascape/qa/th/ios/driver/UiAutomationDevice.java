@@ -96,6 +96,10 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         return instruments.runJavaScript(javaScript);
     }
 
+    public List<String> loadElementTree() throws UIAException {
+        return instruments.runJavaScript("window.logElementTree();");
+    }
+
     /**
      * Gets the screen size in points.
      * http://www.paintcodeapp.com/news/ultimate-guide-to-iphone-resolutions
@@ -240,8 +244,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     public <T extends UIAElement> String getElementValue(String javaScript, Class<T> type) throws UIAException {
         String js = "var e = " + javaScript + "; UIALogger.logMessage(e.value());";
-        String line = instruments.runJavaScript(js).stream().filter(l -> l.contains("Default: ")).findFirst().get();
-        return line.substring(line.indexOf("Default: ") + 9);
+        return Instruments.getLogMessage(instruments.runJavaScript(js));
     }
 
     public void setTextField(String javaScript, String value) throws UIAException {
@@ -251,13 +254,15 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     @Override
     public UIAWindow mainWindow() throws UIAException {
-        List<String> lines = instruments.loadElementTree();
-        return UIA.parseElementTree(lines);
+        List<String> lines = loadElementTree();
+        UIAWindow window = UIA.parseElementTree(lines);
+        window.setInstruments(instruments);
+        return window;
     }
 
     @Override
     public void deactivateAppForDuration(int duration) throws UIAException {
-        instruments.runJavaScript("UIALogger.logMessage(target.deactivateAppForDuration (" + duration + "));");
+        instruments.runJavaScript("UIALogger.logMessage(target.deactivateAppForDuration(" + duration + "));");
     }
 
     @Override

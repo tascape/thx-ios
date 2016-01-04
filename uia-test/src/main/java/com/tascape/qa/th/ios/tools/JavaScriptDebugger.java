@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 tascape.
+ * Copyright 2016 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,7 +171,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
             } else if (e.getSource() == jbSendJs) {
                 this.sendJavaScript();
             } else if (e.getSource() == jbElementTree) {
-                device.getInstruments().loadElementTree().forEach(line -> {
+                device.loadElementTree().forEach(line -> {
                     this.appendResponse(line);
                 });
             } else if (e.getSource() == jbClear) {

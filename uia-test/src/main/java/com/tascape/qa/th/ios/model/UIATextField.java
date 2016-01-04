@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 tascape.
+ * Copyright 2016 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,4 +21,8 @@ package com.tascape.qa.th.ios.model;
  */
 public class UIATextField extends UIAElement {
 
+    public void setValue(String value) throws UIAException {
+        String js = "var e = " + toJavaScript() + "; e.setValue('" + value + "');";
+        getInstruments().runJavaScript(js);
+    }
 }

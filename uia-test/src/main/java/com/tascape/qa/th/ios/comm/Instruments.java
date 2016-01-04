@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 tascape.
+ * Copyright 2016 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.tascape.qa.th.ios.comm;
 
 import com.google.common.collect.Lists;
-import com.tascape.qa.th.ios.model.UIA;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +39,6 @@ import com.tascape.qa.th.ios.driver.UiAutomationDevice;
 import net.sf.lipermi.exception.LipeRMIException;
 import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Server;
-import com.tascape.qa.th.ios.model.UIAElement;
 import com.tascape.qa.th.ios.model.UIAException;
 import com.tascape.qa.th.libx.DefaultExecutor;
 import java.nio.file.Paths;
@@ -131,20 +129,6 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         if (rmiServer != null) {
             rmiServer.close();
         }
-    }
-
-    public List<String> loadElementTree() throws UIAException {
-        return this.runJavaScript("window.logElementTree();");
-    }
-
-    public void logElementTree() throws UIAException {
-        this.runJavaScript("window.logElementTree();").forEach(l -> LOG.debug(l));
-    }
-
-    public <T extends UIAElement> String getElementName(String javaScript, Class<T> type) throws UIAException {
-        String js = "var e = " + javaScript + "; e.logElement();";
-        String line = runJavaScript(js).stream().filter(l -> l.contains(type.getSimpleName())).findFirst().get();
-        return UIA.parseElement(line).name();
     }
 
     public List<String> runJavaScript(String javaScript) throws UIAException {
