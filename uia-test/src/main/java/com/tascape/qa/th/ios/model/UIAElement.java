@@ -57,6 +57,16 @@ public class UIAElement {
         return elements.toArray(new UIAElement[0]);
     }
 
+    public UIATextField[] textFields() {
+        List<UIATextField> es = new ArrayList<>();
+        elements.stream()
+            .filter((e) -> (e instanceof UIATextField))
+            .forEach((e) -> {
+                es.add(UIATextField.class.cast(e));
+            });
+        return es.toArray(new UIATextField[0]);
+    }
+
     public UIAElement parent() {
         return parent;
     }
@@ -64,6 +74,10 @@ public class UIAElement {
     public String value() throws UIAException {
         String js = "var e = " + toJavaScript() + "; UIALogger.logMessage(e.value());";
         return Instruments.getLogMessage(instruments.runJavaScript(js));
+    }
+
+    public void tap() throws UIAException {
+        instruments.runJavaScript(toJavaScript() + ".tap()");
     }
 
     public String toJavaScript() {

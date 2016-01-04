@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 tascape.
+ * Copyright 2016 tascape.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,23 @@
  */
 package com.tascape.qa.th.ios.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
 /**
  *
  * @author linsong wang
  */
 public class UIAPicker extends UIAElement {
 
+    public UIAPickerWheel[] wheels() {
+        List<UIAPickerWheel> es = new ArrayList<>();
+        Stream.of(elements())
+            .filter((e) -> (e instanceof UIAPickerWheel))
+            .forEach((e) -> {
+                es.add(UIAPickerWheel.class.cast(e));
+            });
+        return es.toArray(new UIAPickerWheel[0]);
+    }
 }
