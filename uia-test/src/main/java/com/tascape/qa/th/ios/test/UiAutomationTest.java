@@ -25,6 +25,8 @@ import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,6 +40,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.apache.commons.lang3.StringUtils;
@@ -121,23 +124,34 @@ public interface UiAutomationTest {
                 throw new RuntimeException(ex);
             }
 
-            JPanel jpAction = new JPanel();
-            jpContent.add(jpAction, BorderLayout.PAGE_END);
-            jpAction.setLayout(new BoxLayout(jpAction, BoxLayout.LINE_AXIS));
-
+            JPanel jpResponse = new JPanel(new BorderLayout());
             JTextArea jtaResponse = new JTextArea();
             jtaResponse.setEditable(false);
             jtaResponse.setTabSize(4);
             JScrollPane jsp = new JScrollPane(jtaResponse);
             new SmartScroller(jsp);
+            jpResponse.add(jsp, BorderLayout.CENTER);
+
+            JPanel jpLog = new JPanel();
+            jpLog.setLayout(new BoxLayout(jpLog, BoxLayout.LINE_AXIS));
+            jpResponse.add(jpLog, BorderLayout.PAGE_END);
+
+            JPanel jpJs = new JPanel(new BorderLayout());
             JTextArea jtaJs = new JTextArea();
-            JSplitPane jSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jsp, new JScrollPane(jtaJs));
+            jpJs.add(new JScrollPane(jtaJs), BorderLayout.CENTER);
+
+            JPanel jpAction = new JPanel();
+            jpContent.add(jpAction, BorderLayout.PAGE_END);
+            jpAction.setLayout(new BoxLayout(jpAction, BoxLayout.LINE_AXIS));
+            jpJs.add(jpAction, BorderLayout.PAGE_END);
+
+            JSplitPane jSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jpResponse, jpJs);
             jSplitPane.setResizeWeight(0.8);
             jpContent.add(jSplitPane, BorderLayout.CENTER);
             {
-                JButton jbScreenShot = new JButton("Log Screen");
-                jpAction.add(jbScreenShot);
-                jbScreenShot.addActionListener(event -> {
+                JButton jbLogUi = new JButton("Log UI");
+                jpLog.add(jbLogUi);
+                jbLogUi.addActionListener(event -> {
                     Thread t = new Thread(tName) {
                         public void run() {
                             LOG.debug("\n\n");
@@ -164,6 +178,40 @@ public interface UiAutomationTest {
                     } catch (InterruptedException ex) {
                         LOG.error("Cannot take screenshot", ex);
                     }
+                });
+            }
+            {
+                jpLog.add(Box.createHorizontalStrut(20));
+                JButton jbLogMsg = new JButton("Log Message");
+                jpLog.add(jbLogMsg);
+                JTextField jtMsg = new JTextField(10);
+                jpLog.add(jtMsg);
+                jtMsg.addFocusListener(new FocusListener() {
+                    @Override
+                    public void focusLost(final FocusEvent pE) {
+                    }
+
+                    @Override
+                    public void focusGained(final FocusEvent pE) {
+                        jtMsg.selectAll();
+                    }
+                });
+                jbLogMsg.addActionListener(event -> {
+                    Thread t = new Thread(tName) {
+                        public void run() {
+                            String msg = jtMsg.getText();
+                            if (StringUtils.isNotBlank(msg)) {
+                                LOG.info("{}", msg);
+                            }
+                        }
+                    };
+                    t.start();
+                    try {
+                        t.join();
+                    } catch (InterruptedException ex) {
+                        LOG.error("Cannot take screenshot", ex);
+                    }
+                    jtMsg.requestFocus();
                 });
             }
             {
