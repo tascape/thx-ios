@@ -77,11 +77,14 @@ public interface UiAutomationTest {
      */
     default void testManually(UiAutomationDevice device, int timeoutMinutes) throws Exception {
         final Logger LOG = LoggerFactory.getLogger(UiAutomationTest.class);
-        AtomicBoolean visible = new AtomicBoolean(true);
-        AtomicBoolean pass = new AtomicBoolean(false);
-        long end = System.currentTimeMillis() + timeoutMinutes * 60000L;
 
         LOG.info("Start UI to test manually");
+        String info = device.model() + " " + device.name() + " " + device.systemName() + " " + device.systemVersion()
+            + " " + device.getUuid();
+        long end = System.currentTimeMillis() + timeoutMinutes * 60000L;
+
+        AtomicBoolean visible = new AtomicBoolean(true);
+        AtomicBoolean pass = new AtomicBoolean(false);
         String tName = Thread.currentThread().getName() + "m";
         SwingUtilities.invokeLater(() -> {
             WebLookAndFeel.install();
@@ -118,24 +121,12 @@ public interface UiAutomationTest {
                     visible.set(false);
                 });
             }
-            String info;
-            try {
-                info = device.model() + " " + device.name() + " " + device.systemName() + " " + device.systemVersion()
-                    + " " + device.getUuid();
-                jpInfo.add(new JLabel(info, SwingConstants.CENTER), BorderLayout.CENTER);
-            } catch (UIAException ex) {
-                throw new RuntimeException(ex);
-            }
+
+            jpInfo.add(new JLabel(info, SwingConstants.CENTER), BorderLayout.CENTER);
 
             JPanel jpResponse = new JPanel(new BorderLayout());
             JPanel jpProgress = new JPanel(new BorderLayout());
             jpResponse.add(jpProgress, BorderLayout.PAGE_START);
-            WebProgressBar jpb = new WebProgressBar(0, timeoutMinutes * 60);
-            jpb.setIndeterminate(true);
-            jpb.setIndeterminate(false);
-            jpb.setStringPainted(true);
-            jpb.setString("");
-            jpProgress.add(jpb);
 
             JTextArea jtaResponse = new JTextArea();
             jtaResponse.setEditable(false);
@@ -262,6 +253,13 @@ public interface UiAutomationTest {
                 });
             }
 
+            WebProgressBar jpb = new WebProgressBar(0, timeoutMinutes * 60);
+            jpb.setIndeterminate(true);
+            jpb.setIndeterminate(false);
+            jpb.setStringPainted(true);
+            jpb.setString("");
+            jpProgress.add(jpb);
+
             jf.pack();
             jf.setVisible(true);
             jf.setAlwaysOnTop(true);
@@ -271,10 +269,12 @@ public interface UiAutomationTest {
                 int second = (int) (end - System.currentTimeMillis()) / 1000;
                 jpb.setValue(second);
                 jpb.setString(second + " seconds left");
-                if (second < 300) {
-                    jpb.setForeground(Color.orange);
-                } else if (second < 60) {
+                if (second < 60) {
                     jpb.setForeground(Color.red);
+                } else if (second < 300) {
+                    jpb.setForeground(Color.blue);
+                } else {
+                    jpb.setForeground(Color.green);
                 }
             });
         });
