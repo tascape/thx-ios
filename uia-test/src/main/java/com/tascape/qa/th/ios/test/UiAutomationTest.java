@@ -16,6 +16,8 @@
 package com.tascape.qa.th.ios.test;
 
 import com.alee.laf.WebLookAndFeel;
+import com.alee.laf.progressbar.WebProgressBar;
+import com.alee.utils.swing.ComponentUpdater;
 import com.tascape.qa.th.exception.EntityDriverException;
 import com.tascape.qa.th.ios.driver.UiAutomationDevice;
 import com.tascape.qa.th.ios.model.UIAException;
@@ -25,6 +27,7 @@ import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
@@ -99,8 +102,8 @@ public interface UiAutomationTest {
                 jpInfo.add(jb, BorderLayout.LINE_START);
                 jb.addActionListener(event -> {
                     pass.set(true);
-                    visible.set(false);
                     jf.dispose();
+                    visible.set(false);
                 });
             }
             {
@@ -111,8 +114,8 @@ public interface UiAutomationTest {
                 jpInfo.add(jb, BorderLayout.LINE_END);
                 jb.addActionListener(event -> {
                     pass.set(false);
-                    visible.set(false);
                     jf.dispose();
+                    visible.set(false);
                 });
             }
             String info;
@@ -125,6 +128,15 @@ public interface UiAutomationTest {
             }
 
             JPanel jpResponse = new JPanel(new BorderLayout());
+            JPanel jpProgress = new JPanel(new BorderLayout());
+            jpResponse.add(jpProgress, BorderLayout.PAGE_START);
+            WebProgressBar jpb = new WebProgressBar(0, timeoutMinutes * 60);
+            jpb.setIndeterminate(true);
+            jpb.setIndeterminate(false);
+            jpb.setStringPainted(true);
+            jpb.setString("");
+            jpProgress.add(jpb);
+
             JTextArea jtaResponse = new JTextArea();
             jtaResponse.setEditable(false);
             jtaResponse.setTabSize(4);
@@ -132,22 +144,17 @@ public interface UiAutomationTest {
             new SmartScroller(jsp);
             jpResponse.add(jsp, BorderLayout.CENTER);
 
-            JPanel jpLog = new JPanel();
-            jpLog.setLayout(new BoxLayout(jpLog, BoxLayout.LINE_AXIS));
-            jpResponse.add(jpLog, BorderLayout.PAGE_END);
-
             JPanel jpJs = new JPanel(new BorderLayout());
             JTextArea jtaJs = new JTextArea();
             jpJs.add(new JScrollPane(jtaJs), BorderLayout.CENTER);
 
-            JPanel jpAction = new JPanel();
-            jpContent.add(jpAction, BorderLayout.PAGE_END);
-            jpAction.setLayout(new BoxLayout(jpAction, BoxLayout.LINE_AXIS));
-            jpJs.add(jpAction, BorderLayout.PAGE_END);
-
             JSplitPane jSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jpResponse, jpJs);
             jSplitPane.setResizeWeight(0.8);
             jpContent.add(jSplitPane, BorderLayout.CENTER);
+
+            JPanel jpLog = new JPanel();
+            jpLog.setLayout(new BoxLayout(jpLog, BoxLayout.LINE_AXIS));
+            jpResponse.add(jpLog, BorderLayout.PAGE_END);
             {
                 JButton jbLogUi = new JButton("Log UI");
                 jpLog.add(jbLogUi);
@@ -180,8 +187,8 @@ public interface UiAutomationTest {
                     }
                 });
             }
+            jpLog.add(Box.createHorizontalStrut(20));
             {
-                jpLog.add(Box.createHorizontalStrut(20));
                 JButton jbLogMsg = new JButton("Log Message");
                 jpLog.add(jbLogMsg);
                 JTextField jtMsg = new JTextField(10);
@@ -214,6 +221,11 @@ public interface UiAutomationTest {
                     jtMsg.requestFocus();
                 });
             }
+
+            JPanel jpAction = new JPanel();
+            jpContent.add(jpAction, BorderLayout.PAGE_END);
+            jpAction.setLayout(new BoxLayout(jpAction, BoxLayout.LINE_AXIS));
+            jpJs.add(jpAction, BorderLayout.PAGE_END);
             {
                 JButton jbJavaScript = new JButton("Run JavaScript");
                 jpAction.add(Box.createHorizontalGlue());
@@ -254,6 +266,17 @@ public interface UiAutomationTest {
             jf.setVisible(true);
             jf.setAlwaysOnTop(true);
             jf.setLocationRelativeTo(null);
+
+            ComponentUpdater.install(jpb, 1000, (ActionEvent e) -> {
+                int second = (int) (end - System.currentTimeMillis()) / 1000;
+                jpb.setValue(second);
+                jpb.setString(second + " seconds left");
+                if (second < 300) {
+                    jpb.setForeground(Color.orange);
+                } else if (second < 60) {
+                    jpb.setForeground(Color.red);
+                }
+            });
         });
 
         while (visible.get()) {
