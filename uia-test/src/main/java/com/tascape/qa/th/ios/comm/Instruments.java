@@ -108,6 +108,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         this.preTargetJavaScript = javaScript;
     }
 
+    @Override
     public void connect() throws Exception {
         LOG.info("Start app {} on {}", appName, uuid);
         ngServer = this.startNailGunServer();
@@ -115,6 +116,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         instrumentsDog = this.startInstrumentsServer(appName);
     }
 
+    @Override
     public void disconnect() {
         responseQueue.clear();
         if (instrumentsDog != null) {

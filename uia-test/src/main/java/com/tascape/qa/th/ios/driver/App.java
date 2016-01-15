@@ -33,6 +33,7 @@ public abstract class App extends EntityDriver {
 
     public abstract int getLaunchDelayMillis();
 
+    @Override
     public String getVersion() {
         try {
             return uiaDevice.getAppVersion(getBundleId());
