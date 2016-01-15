@@ -18,24 +18,27 @@ package com.tascape.qa.th.ios.test;
 import com.alee.laf.WebLookAndFeel;
 import com.alee.laf.progressbar.WebProgressBar;
 import com.alee.utils.swing.ComponentUpdater;
-import com.tascape.qa.th.exception.EntityDriverException;
 import com.tascape.qa.th.ios.driver.UiAutomationDevice;
 import com.tascape.qa.th.ios.model.UIAException;
 import com.tascape.qa.th.ios.tools.SmartScroller;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Desktop;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -92,7 +95,7 @@ public interface UiAutomationTest {
             jf.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
             JPanel jpContent = new JPanel(new BorderLayout());
             jf.setContentPane(jpContent);
-            jpContent.setPreferredSize(new Dimension(818, 618));
+            jpContent.setPreferredSize(new Dimension(1088, 828));
             jpContent.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
             JPanel jpInfo = new JPanel();
@@ -135,6 +138,11 @@ public interface UiAutomationTest {
             new SmartScroller(jsp);
             jpResponse.add(jsp, BorderLayout.CENTER);
 
+            JPanel jpScreen = new JPanel(new BorderLayout());
+            JScrollPane jsp1 = new JScrollPane(jpScreen);
+            jsp1.setPreferredSize(new Dimension(430, 600));
+            jpResponse.add(jsp1, BorderLayout.LINE_START);
+
             JPanel jpJs = new JPanel(new BorderLayout());
             JTextArea jtaJs = new JTextArea();
             jpJs.add(new JScrollPane(jtaJs), BorderLayout.CENTER);
@@ -149,22 +157,42 @@ public interface UiAutomationTest {
             {
                 JButton jbLogUi = new JButton("Log UI");
                 jpLog.add(jbLogUi);
-                jbLogUi.addActionListener(event -> {
+                jbLogUi.addActionListener((ActionEvent event) -> {
                     Thread t = new Thread(tName) {
                         public void run() {
                             LOG.debug("\n\n");
                             try {
+                                jpContent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                                 File png = device.takeDeviceScreenshot();
-                                Desktop.getDesktop().open(png);
+                                BufferedImage image = ImageIO.read(png);
+                                int w = image.getWidth();
+                                int h = image.getHeight();
+                                int w1 = 400;
+                                int h1 = (int) ((w1 + 0.0) * h / w);
+
+                                BufferedImage resizedImg = new BufferedImage(w1, h1, BufferedImage.TYPE_INT_ARGB);
+                                Graphics2D g2 = resizedImg.createGraphics();
+                                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                                g2.drawImage(image, 0, 0, w1, h1, null);
+                                g2.dispose();
+
+                                JLabel jLabel = new JLabel(new ImageIcon(resizedImg));
+                                jpScreen.removeAll();
+                                jpScreen.add(jLabel, BorderLayout.CENTER);
+                                jpScreen.validate();
 
                                 device.mainWindow().logElement().forEach(line -> {
                                     LOG.debug(line);
                                     jtaResponse.append(line);
                                     jtaResponse.append("\n");
                                 });
-                            } catch (EntityDriverException | IOException ex) {
+                            } catch (Exception ex) {
                                 LOG.error("Cannot log screen", ex);
                                 jtaResponse.append("Cannot log screen");
+                            } finally {
+                                jpContent.setCursor(Cursor.getDefaultCursor());
+
                             }
                             jtaResponse.append("\n\n\n");
                             LOG.debug("\n\n");
@@ -274,7 +302,7 @@ public interface UiAutomationTest {
                 } else if (second < 300) {
                     jpb.setForeground(Color.blue);
                 } else {
-                    jpb.setForeground(Color.green);
+                    jpb.setForeground(Color.green.darker());
                 }
             });
         });
@@ -290,10 +318,6 @@ public interface UiAutomationTest {
         if (pass.get()) {
             LOG.info("Manual UI Interaction returns PASS");
         } else {
-            device.takeDeviceScreenshot();
-            device.mainWindow().logElement().forEach(line -> {
-                LOG.debug(line);
-            });
             Assert.fail("Manual UI Interaction returns FAIL");
         }
     }

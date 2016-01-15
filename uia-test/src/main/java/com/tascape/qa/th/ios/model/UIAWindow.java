@@ -31,6 +31,15 @@ public class UIAWindow extends UIAElement {
         super.setInstruments(instruments);
     }
 
+    /**
+     * Finds UI element recursively.
+     *
+     * @param <T>  type of element
+     * @param type type of element
+     * @param name name of element
+     *
+     * @return element found, or null
+     */
     @Override
     public <T extends UIAElement> T findElement(Class<T> type, String name) {
         LOG.debug("Look for {}['{}']", type.getSimpleName(), name);
