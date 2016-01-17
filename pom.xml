@@ -6,16 +6,11 @@
 
     <groupId>com.tascape.qa</groupId>
     <artifactId>thx-ios</artifactId>
-    <version>1.1.0</version>  
+    <version>1.1.1</version>  
     <packaging>pom</packaging>
 
     <name>thx-ios</name>
     <description>TestHarness Extension for iOS</description>
-
-    <modules>
-        <module>libimobiledevice</module>
-        <module>uia-test</module>
-    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -16,6 +16,7 @@
 package com.tascape.qa.th.ios.model;
 
 import com.tascape.qa.th.ios.comm.Instruments;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,8 @@ public class UIAElement {
     private String name;
 
     private Rectangle2D.Float rect;
+
+    private Point2D.Float center;
 
     private final List<UIAElement> elements = new ArrayList<>();
 
@@ -78,6 +81,10 @@ public class UIAElement {
 
     public void tap() throws UIAException {
         instruments.runJavaScript(toJavaScript() + ".tap()");
+    }
+
+    public void tapOn() throws UIAException {
+        instruments.runJavaScript("target.tap({x:" + center.x + ", y:" + center.y + "})");
     }
 
     public String toJavaScript() {
@@ -162,6 +169,7 @@ public class UIAElement {
 
     void setRect(Rectangle2D.Float rect) {
         this.rect = rect;
+        this.center = new Point2D.Float(rect.x + rect.width / 2, rect.y + rect.height / 2);
     }
 
     void addElement(UIAElement element) {

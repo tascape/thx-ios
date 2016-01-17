@@ -6,11 +6,11 @@
     <parent>
         <groupId>com.tascape.qa</groupId>
         <artifactId>thx-ios</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </parent>
     <groupId>com.tascape.qa</groupId>
     <artifactId>thx-ios-libimobiledevice</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <packaging>jar</packaging>
 
     <name>thx-ios-libimobiledevice</name>

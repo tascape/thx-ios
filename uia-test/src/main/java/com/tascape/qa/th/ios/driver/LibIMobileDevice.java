@@ -268,7 +268,7 @@ class LibIMobileDevice extends EntityDriver {
     }
 
     public File startSysLog() throws IOException, SDKException {
-        File log = this.saveAsTempTextFile("syslog", "");
+        File log = this.saveAsTempTextFile("syslog-", "");
         PrintWriter pw = new PrintWriter(new FileOutputStream(log));
         sysLogListener = (SysLogLine line) -> {
             pw.println(line.toString());
