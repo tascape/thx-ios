@@ -110,7 +110,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
 
     @Override
     public void connect() throws Exception {
-        LOG.info("Start app {} on {}", appName, uuid);
+        LOG.debug("Start app {} on {}", appName, uuid);
         ngServer = this.startNailGunServer();
         rmiServer = this.startRmiServer();
         instrumentsDog = this.startInstrumentsServer(appName);
@@ -120,7 +120,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     public void disconnect() {
         responseQueue.clear();
         if (instrumentsDog != null) {
-            LOG.info("Stop {}", uuid);
+            LOG.debug("Stop instruments on {}", uuid);
             instrumentsStreamHandler.deleteObservers();
             instrumentsDog.stop();
             instrumentsDog.killedProcess();

@@ -79,7 +79,14 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         }
         instruments.connect();
         Utils.sleep(delayMillis, "Wait for app to start");
-        instruments.runJavaScript("window.logElement();").forEach(l -> LOG.debug(l));
+        long end = System.currentTimeMillis() + TIMEOUT_SECOND * 1000;
+        while (System.currentTimeMillis() < end) {
+            List<String> lines = this.instruments.runJavaScript("window.logElement();");
+            lines.forEach(l -> LOG.debug(l));
+            if (lines.stream().filter((l) -> (l.startsWith("UIAWindow"))).findFirst().isPresent()) {
+                return;
+            }
+        }
     }
 
     public void stop() {

@@ -83,6 +83,11 @@ public class UIAElement {
         instruments.runJavaScript(toJavaScript() + ".tap()");
     }
 
+    /**
+     * Taps on screen at element's center coordinates.
+     *
+     * @throws UIAException in case of Instruments error
+     */
     public void tapOn() throws UIAException {
         instruments.runJavaScript("target.tap({x:" + center.x + ", y:" + center.y + "})");
     }
