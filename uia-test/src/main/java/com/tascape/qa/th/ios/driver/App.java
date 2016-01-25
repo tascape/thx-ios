@@ -48,6 +48,10 @@ public abstract class App extends EntityDriver {
         this.launch();
     }
 
+    public UiAutomationDevice getUiaDevice() {
+        return uiaDevice;
+    }
+
     public void launch() throws Exception {
         try {
             uiaDevice.start(this.getName(), getLaunchDelayMillis());
