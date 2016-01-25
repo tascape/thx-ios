@@ -60,7 +60,7 @@ import org.apache.commons.lang3.StringUtils;
 public class Instruments extends EntityCommunication implements JavaScriptServer, Observer {
     private static final Logger LOG = LoggerFactory.getLogger(Instruments.class);
 
-    public static final String SYSPROP_TIMEOUT_SECOND = "qa.th.driver.ios.TIMEOUT_SECOND";
+    public static final String SYSPROP_JS_TIMEOUT_SECOND = "qa.th.comm.ios.JS_TIMEOUT_SECOND";
 
     public static final String INSTRUMENTS_ERROR = "Error:";
 
@@ -68,7 +68,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         + "/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
 
     public static final int JAVASCRIPT_TIMEOUT_SECOND
-        = SystemConfiguration.getInstance().getIntProperty(SYSPROP_TIMEOUT_SECOND, 30);
+        = SystemConfiguration.getInstance().getIntProperty(SYSPROP_JS_TIMEOUT_SECOND, 60);
 
     private static final String INSTRUMENTS_POISON = UUID.randomUUID().toString();
 

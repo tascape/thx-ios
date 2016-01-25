@@ -20,6 +20,11 @@
         <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
     </properties>
 
+    <modules>
+        <module>libimobiledevice</module>
+        <module>uia-test</module>
+    </modules>
+
     <url>https://github.com/tascape/thx-ios</url>
     <licenses>
         <license>
