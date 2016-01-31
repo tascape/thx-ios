@@ -66,5 +66,6 @@ public class JavaScriptNail {
         JavaScriptServer jss = JavaScriptServer.class.cast(client.getGlobal(JavaScriptServer.class));
         String js = jss.retrieveJavaScript();
         System.out.println(js);
+        client.close();
     }
 }

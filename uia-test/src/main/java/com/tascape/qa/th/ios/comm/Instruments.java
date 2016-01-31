@@ -62,13 +62,18 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
 
     public static final String SYSPROP_JS_TIMEOUT_SECOND = "qa.th.comm.ios.JS_TIMEOUT_SECOND";
 
+    public static final String UIA_SCRIPT_EXCEPTION
+        = "Automation Instrument ran into an exception while trying to run the script.  UIAScriptAgentSignaledException";
+
+    public static final String INSTRUMENTS_FAIL = "Fail: The target application appears to have died";
+
     public static final String INSTRUMENTS_ERROR = "Error:";
 
     public static final String TRACE_TEMPLATE = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents"
         + "/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
 
     public static final int JAVASCRIPT_TIMEOUT_SECOND
-        = SystemConfiguration.getInstance().getIntProperty(SYSPROP_JS_TIMEOUT_SECOND, 60);
+        = SystemConfiguration.getInstance().getIntProperty(SYSPROP_JS_TIMEOUT_SECOND, 120);
 
     private static final String INSTRUMENTS_POISON = UUID.randomUUID().toString();
 
@@ -111,14 +116,27 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     @Override
     public void connect() throws Exception {
         LOG.debug("Start app {} on {}", appName, uuid);
-        ngServer = this.startNailGunServer();
-        rmiServer = this.startRmiServer();
+        if (ngServer == null) {
+            ngServer = this.startNailGunServer();
+        }
+        if (rmiServer == null) {
+            rmiServer = this.startRmiServer();
+        }
         instrumentsDog = this.startInstrumentsServer(appName);
     }
 
     @Override
     public void disconnect() {
         responseQueue.clear();
+        if (instrumentsDog != null) {
+            LOG.debug("Stop instruments on {}", uuid);
+            instrumentsStreamHandler.deleteObservers();
+            instrumentsDog.stop();
+            instrumentsDog.killedProcess();
+        }
+    }
+
+    public void shutdown() {
         if (instrumentsDog != null) {
             LOG.debug("Stop instruments on {}", uuid);
             instrumentsStreamHandler.deleteObservers();

@@ -44,10 +44,6 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     public static final String SYSPROP_TIMEOUT_SECOND = "qa.th.driver.ios.TIMEOUT_SECOND";
 
-    public static final String INSTRUMENTS_ERROR = "Error:";
-
-    public static final String INSTRUMENTS_FAIL = "Fail: The target application appears to have died";
-
     public static final String TRACE_TEMPLATE = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents"
         + "/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
 
@@ -69,11 +65,11 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     public void start(String appName, int delayMillis) throws Exception {
-        LOG.info("Start app {} on {}", appName, this.getUuid());
         if (instruments != null) {
             instruments.disconnect();
+        } else {
+            instruments = new Instruments(getUuid(), appName);
         }
-        instruments = new Instruments(getUuid(), appName);
         if (StringUtils.isNotEmpty(alertHandler)) {
             instruments.setPreTargetJavaScript(alertHandler);
         }
@@ -91,7 +87,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     public void stop() {
         if (instruments != null) {
-            instruments.disconnect();
+            instruments.shutdown();
         }
     }
 
