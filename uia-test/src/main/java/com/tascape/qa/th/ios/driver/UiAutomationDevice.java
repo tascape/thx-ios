@@ -520,7 +520,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     public void setAlertAutoDismiss() throws UIAException {
-        this.alertHandler = "UIATarget.onAlert = function onAlert(alert) {alert.logElement(); return false;}";
+        this.alertHandler = "UIATarget.onAlert = function onAlert(alert) {return false;}";
     }
 
     public void logElementTree() throws UIAException {
