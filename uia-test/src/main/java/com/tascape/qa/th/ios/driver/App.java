@@ -53,11 +53,6 @@ public abstract class App extends EntityDriver {
     }
 
     public void launch() throws Exception {
-        try {
-            uiaDevice.start(this.getName(), getLaunchDelayMillis());
-        } catch (Exception ex) {
-            uiaDevice.stop();
-            throw ex;
-        }
+        uiaDevice.start(this.getName(), getLaunchDelayMillis());
     }
 }
