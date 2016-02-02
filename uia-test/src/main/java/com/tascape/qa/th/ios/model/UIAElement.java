@@ -317,6 +317,16 @@ public class UIAElement {
         instruments.runJavaScript("target.tap({x:" + center.x + ", y:" + center.y + "})");
     }
 
+    public void drag(float x, float y) throws UIAException {
+        this.drag(x, y, 1);
+    }
+
+    public void drag(float x, float y, int duration) throws UIAException {
+        Point2D.Float end = new Point2D.Float(center.x + x, center.y + y);
+        instruments.runJavaScript("target.dragFromToForDuration(" + toCGString(center) + ", " + toCGString(end)
+            + ", " + duration + ");");
+    }
+
     public String toJavaScript() {
         List<String> list = new ArrayList<>();
         list.add(0, "elements()[" + index + "]");
@@ -411,5 +421,9 @@ public class UIAElement {
 
     void setParent(UIAElement parent) {
         this.parent = parent;
+    }
+
+    String toCGString(Point2D.Float point) {
+        return String.format("{x:%f, y:%f}", point.x, point.y);
     }
 }
