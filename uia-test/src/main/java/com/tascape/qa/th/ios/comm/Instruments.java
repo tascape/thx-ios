@@ -203,7 +203,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             } else {
                 lines.add(res);
             }
-            if (res.contains(INSTRUMENTS_ERROR)) {
+            if (res.contains(INSTRUMENTS_ERROR) || res.contains(INSTRUMENTS_FAIL)) {
                 LOG.error(res);
             } else {
                 LOG.debug(res);
