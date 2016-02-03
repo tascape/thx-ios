@@ -48,7 +48,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         + "/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
 
     public static final int TIMEOUT_SECOND
-        = SystemConfiguration.getInstance().getIntProperty(SYSPROP_TIMEOUT_SECOND, 30);
+        = SystemConfiguration.getInstance().getIntProperty(SYSPROP_TIMEOUT_SECOND, 120);
 
     private Instruments instruments;
 
@@ -75,19 +75,9 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         }
         instruments.connect();
         Utils.sleep(delayMillis, "Wait for app to start");
-        long end = System.currentTimeMillis() + TIMEOUT_SECOND * 1000;
-        while (System.currentTimeMillis() < end) {
-            try {
-                List<String> lines = this.instruments.runJavaScript("window.logElement();");
-                lines.forEach(l -> LOG.debug(l));
-                if (lines.stream().filter((l) -> (l.startsWith("UIAWindow"))).findFirst().isPresent()) {
-                    return;
-                }
-            } catch (Exception ex) {
-                LOG.warn("{}", ex.getMessage());
-            }
+        if (!this.waitForElement(UIAWindow.class, "(null)")) {
+            throw new UIAException("Cannot start app ");
         }
-        throw new UIAException("Cannot start app ");
     }
 
     public void stop() {
@@ -231,14 +221,19 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * @throws UIAException                   in case of UIA issue
      * @throws java.lang.InterruptedException in case of interruption
      */
-    public <T extends UIAElement> boolean waitForElement(Class<T> type, String name)
-        throws UIAException, InterruptedException {
+    public <T extends UIAElement> boolean waitForElement(Class<T> type, String name) throws UIAException,
+        InterruptedException {
         long end = System.currentTimeMillis() + TIMEOUT_SECOND * 1000;
         while (System.currentTimeMillis() < end) {
-            if (mainWindow().findElement(type, name) != null) {
-                return true;
+            try {
+                if (mainWindow().findElement(type, name) != null) {
+                    return true;
+                }
+            } catch (Exception ex) {
+                LOG.warn("{}", ex.getMessage());
+                Thread.sleep(10000);
             }
-            Utils.sleep(1000, "wait for " + type + "[" + name + "]");
+            Utils.sleep(5000, "wait for " + type + "[" + name + "]");
         }
         return false;
     }
