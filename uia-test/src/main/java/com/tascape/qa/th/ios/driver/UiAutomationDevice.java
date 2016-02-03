@@ -48,7 +48,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         + "/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
 
     public static final int TIMEOUT_SECOND
-        = SystemConfiguration.getInstance().getIntProperty(SYSPROP_TIMEOUT_SECOND, 120);
+        = SystemConfiguration.getInstance().getIntProperty(SYSPROP_TIMEOUT_SECOND, 300);
 
     private Instruments instruments;
 
@@ -233,7 +233,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
                 LOG.warn("{}", ex.getMessage());
                 Thread.sleep(10000);
             }
-            Utils.sleep(5000, "wait for " + type + "[" + name + "]");
+            Utils.sleep(5000, "wait for " + type.getSimpleName() + "[" + name + "]");
         }
         return false;
     }
