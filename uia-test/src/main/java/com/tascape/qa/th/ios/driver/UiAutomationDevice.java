@@ -48,7 +48,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         + "/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
 
     public static final int TIMEOUT_SECOND
-        = SystemConfiguration.getInstance().getIntProperty(SYSPROP_TIMEOUT_SECOND, 300);
+        = SystemConfiguration.getInstance().getIntProperty(SYSPROP_TIMEOUT_SECOND, 120);
 
     private Instruments instruments;
 
@@ -75,9 +75,19 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         }
         instruments.connect();
         Utils.sleep(delayMillis, "Wait for app to start");
-        if (!this.waitForElement(UIAWindow.class, "(null)")) {
-            throw new UIAException("Cannot start app ");
+        long end = System.currentTimeMillis() + TIMEOUT_SECOND * 1000;
+        while (end > System.currentTimeMillis()) {
+            try {
+                if (this.instruments.runJavaScript("window.logElement();").stream()
+                    .filter(l -> l.contains(UIAWindow.class.getSimpleName())).findAny().isPresent()) {
+                    return;
+                }
+            } catch (Exception ex) {
+                LOG.warn(ex.getMessage());
+                Thread.sleep(5000);
+            }
         }
+        throw new UIAException("Cannot start app ");
     }
 
     public void stop() {
