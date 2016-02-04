@@ -534,7 +534,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     public void logElementTree() throws UIAException {
-        mainWindow().logElement().forEach(l -> LOG.debug(l));
+        instruments.runJavaScript("window.logElementTree();").forEach(l -> LOG.debug(l));
     }
 
     public Instruments getInstruments() {
