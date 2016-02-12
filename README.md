@@ -7,7 +7,7 @@ The test cases are written in Java, which sends JavaScript snippet to Instrument
 ```
 <dependency>
     <groupId>com.tascape.qa</groupId>
-    <artifactId>thx-ios</artifactId>
-    <version>1.1.1</version>
+    <artifactId>thx-ios-uiat</artifactId>
+    <version>1.1.4</version>
 </dependency>
 ```
