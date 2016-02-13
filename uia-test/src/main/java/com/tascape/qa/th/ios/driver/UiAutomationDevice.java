@@ -73,18 +73,20 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         if (StringUtils.isNotEmpty(alertHandler)) {
             instruments.setPreTargetJavaScript(alertHandler);
         }
-        instruments.connect();
-        Utils.sleep(delayMillis, "Wait for app to start");
-        long end = System.currentTimeMillis() + TIMEOUT_SECOND * 1000;
-        while (end > System.currentTimeMillis()) {
-            try {
-                if (this.instruments.runJavaScript("window.logElement();").stream()
-                    .filter(l -> l.contains(UIAWindow.class.getSimpleName())).findAny().isPresent()) {
-                    return;
+        for (char c : "12".toCharArray()) {
+            instruments.connect();
+            Utils.sleep(delayMillis, "Wait for app to start");
+            long end = System.currentTimeMillis() + TIMEOUT_SECOND * 500;
+            while (end > System.currentTimeMillis()) {
+                try {
+                    if (this.instruments.runJavaScript("window.logElement();").stream()
+                        .filter(l -> l.contains(UIAWindow.class.getSimpleName())).findAny().isPresent()) {
+                        return;
+                    }
+                } catch (Exception ex) {
+                    LOG.warn(ex.getMessage());
+                    Thread.sleep(5000);
                 }
-            } catch (Exception ex) {
-                LOG.warn(ex.getMessage());
-                Thread.sleep(5000);
             }
         }
         throw new UIAException("Cannot start app ");
