@@ -166,6 +166,11 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIATableView[0]);
     }
 
+    public UIATableCell[] cells() {
+        return elements.stream().filter(e -> e instanceof UIATableCell).map(e -> (UIATableCell) e)
+            .collect(Collectors.toList()).toArray(new UIATableCell[0]);
+    }
+
     public UIATextField[] textFields() {
         return elements.stream().filter(e -> e instanceof UIATextField).map(e -> (UIATextField) e)
             .collect(Collectors.toList()).toArray(new UIATextField[0]);
