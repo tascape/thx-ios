@@ -51,6 +51,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -76,6 +77,10 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         = SystemConfiguration.getInstance().getIntProperty(SYSPROP_JS_TIMEOUT_SECOND, 120);
 
     private static final String INSTRUMENTS_POISON = UUID.randomUUID().toString();
+
+    static {
+        new CacheCleaner().start();
+    }
 
     private final SynchronousQueue<String> javaScriptQueue = new SynchronousQueue<>();
 
@@ -392,6 +397,26 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             this.setChanged();
             this.notifyObservers(line);
             this.clearChanged();
+        }
+    }
+
+    private static class CacheCleaner extends Thread {
+        private static final File CACHE_DIR = Paths.get("/Library/Caches/com.apple.dt.instruments").toFile();
+
+        private static final long CUTOFF_DATE = System.currentTimeMillis() - 2 * 24 * 3600000;
+
+        @Override
+        public void run() {
+            if (CACHE_DIR.exists()) {
+                Stream.of(CACHE_DIR.listFiles(File::isDirectory))
+                    .filter(file -> file.lastModified() < CUTOFF_DATE)
+                    .forEach(file -> {
+                        LOG.debug("Delete {}", file);
+                        FileUtils.deleteQuietly(file);
+                    });
+            } else {
+                LOG.warn("Cannot file cache directory {}", CACHE_DIR);
+            }
         }
     }
 
