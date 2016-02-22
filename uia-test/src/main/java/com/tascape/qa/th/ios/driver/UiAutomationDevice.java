@@ -97,6 +97,10 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
             instruments.shutdown();
         }
     }
+    
+    public void install(App app) {
+        app.setDevice(this);
+    }
 
     public void setAlertHandler(String javaScript) {
         this.alertHandler = javaScript;

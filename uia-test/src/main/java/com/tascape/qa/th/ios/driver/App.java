@@ -16,7 +16,7 @@
 package com.tascape.qa.th.ios.driver;
 
 import com.tascape.qa.th.driver.EntityDriver;
-import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -27,32 +27,36 @@ import org.slf4j.LoggerFactory;
 public abstract class App extends EntityDriver {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(App.class);
 
-    protected UiAutomationDevice uiaDevice;
+    private UiAutomationDevice device;
 
     public abstract String getBundleId();
 
     public abstract int getLaunchDelayMillis();
 
+    protected String version;
+
     @Override
     public String getVersion() {
-        try {
-            return uiaDevice.getAppVersion(getBundleId());
-        } catch (SDKException ex) {
-            LOG.warn(ex.getMessage());
-            return "na";
+        if (StringUtils.isBlank(version)) {
+            try {
+                version = device.getAppVersion(getBundleId());
+            } catch (Exception ex) {
+                LOG.warn(ex.getMessage());
+                version = "";
+            }
         }
-    }
-
-    public void attachTo(UiAutomationDevice device) throws Exception {
-        this.uiaDevice = device;
-        this.launch();
-    }
-
-    public UiAutomationDevice getUiaDevice() {
-        return uiaDevice;
+        return version;
     }
 
     public void launch() throws Exception {
-        uiaDevice.start(this.getName(), getLaunchDelayMillis());
+        device.start(this.getName(), getLaunchDelayMillis());
+    }
+
+    public UiAutomationDevice getDevice() {
+        return device;
+    }
+
+    public void setDevice(UiAutomationDevice device) {
+        this.device = device;
     }
 }

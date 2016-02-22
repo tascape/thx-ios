@@ -45,7 +45,7 @@
         <developerConnection>scm:git:git@github.com:tascape/thx-ios.git</developerConnection>
         <url>git:git@github.com:tascape/thx-ios.git</url>
     </scm>
-    
+
     <build>
         <plugins>
             <plugin>

@@ -31,6 +31,8 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -140,7 +142,7 @@ public interface UiAutomationTest {
 
             JPanel jpScreen = new JPanel(new BorderLayout());
             JScrollPane jsp1 = new JScrollPane(jpScreen);
-            jsp1.setPreferredSize(new Dimension(430, 600));
+//            jsp1.setPreferredSize(new Dimension(430, 600));
             jpResponse.add(jsp1, BorderLayout.LINE_START);
 
             JPanel jpJs = new JPanel(new BorderLayout());
@@ -159,22 +161,22 @@ public interface UiAutomationTest {
                 jpLog.add(jbLogUi);
                 jbLogUi.addActionListener((ActionEvent event) -> {
                     Thread t = new Thread(tName) {
+                        @Override
                         public void run() {
                             LOG.debug("\n\n");
                             try {
                                 jpContent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                                 File png = device.takeDeviceScreenshot();
                                 BufferedImage image = ImageIO.read(png);
-                                int w = image.getWidth();
-                                int h = image.getHeight();
-                                int w1 = 400;
-                                int h1 = (int) ((w1 + 0.0) * h / w);
 
-                                BufferedImage resizedImg = new BufferedImage(w1, h1, BufferedImage.TYPE_INT_ARGB);
+                                int w = device.getDisplaySize().width;
+                                int h = device.getDisplaySize().height;
+
+                                BufferedImage resizedImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                                 Graphics2D g2 = resizedImg.createGraphics();
                                 g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                                g2.drawImage(image, 0, 0, w1, h1, null);
+                                g2.drawImage(image, 0, 0, w, h, null);
                                 g2.dispose();
 
                                 JLabel jLabel = new JLabel(new ImageIcon(resizedImg));
@@ -182,6 +184,12 @@ public interface UiAutomationTest {
                                 jpScreen.add(jLabel, BorderLayout.CENTER);
                                 jpScreen.validate();
 
+                                jLabel.addMouseListener(new MouseAdapter() {
+                                    @Override
+                                    public void mouseClicked(MouseEvent e) {
+                                        LOG.debug("clicked {}", e.getPoint());
+                                    }
+                                });
                                 device.mainWindow().logElement().forEach(line -> {
                                     LOG.debug(line);
                                     jtaResponse.append(line);
@@ -192,7 +200,6 @@ public interface UiAutomationTest {
                                 jtaResponse.append("Cannot log screen");
                             } finally {
                                 jpContent.setCursor(Cursor.getDefaultCursor());
-
                             }
                             jtaResponse.append("\n\n\n");
                             LOG.debug("\n\n");
@@ -224,6 +231,7 @@ public interface UiAutomationTest {
                 });
                 jbLogMsg.addActionListener(event -> {
                     Thread t = new Thread(tName) {
+                        @Override
                         public void run() {
                             String msg = jtMsg.getText();
                             if (StringUtils.isNotBlank(msg)) {
@@ -259,6 +267,7 @@ public interface UiAutomationTest {
                     }
                     String javaScript = js;
                     Thread t = new Thread(tName) {
+                        @Override
                         public void run() {
                             try {
                                 device.runJavaScript(javaScript).forEach(l -> {
