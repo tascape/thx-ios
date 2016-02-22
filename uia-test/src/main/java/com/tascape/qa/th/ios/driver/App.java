@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public abstract class App extends EntityDriver {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(App.class);
 
-    private UiAutomationDevice device;
+    protected UiAutomationDevice device;
 
     public abstract String getBundleId();
 
