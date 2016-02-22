@@ -97,7 +97,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
             instruments.shutdown();
         }
     }
-    
+
     public void install(App app) {
         app.setDevice(this);
     }
@@ -280,6 +280,16 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     @Override
+    public void captureRectWithName(Rectangle2D rect, String imageName) throws UIAException {
+        instruments.runJavaScript("target.captureScreenWithName(,'" + imageName + "');");
+    }
+
+    @Override
+    public void captureScreenWithName(String imageName) throws UIAException {
+        instruments.runJavaScript("target.captureScreenWithName('" + imageName + "');");
+    }
+
+    @Override
     public void deactivateAppForDuration(int duration) throws UIAException {
         instruments.runJavaScript("UIALogger.logMessage(target.deactivateAppForDuration(" + duration + "));");
     }
@@ -295,7 +305,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     @Override
-    public Rectangle2D.Float rect() throws UIAException {
+    public Rectangle2D rect() throws UIAException {
         List<String> lines = instruments.runJavaScript("UIALogger.logMessage(target.rect());");
         throw new UnsupportedOperationException("Not supported yet.");
     }

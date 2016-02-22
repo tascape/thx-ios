@@ -32,7 +32,7 @@ public interface UIATarget {
 
     String name() throws UIAException;
 
-    Rectangle2D.Float rect() throws UIAException;
+    Rectangle2D rect() throws UIAException;
 
     String systemName() throws UIAException;
 
@@ -43,6 +43,10 @@ public interface UIATarget {
     void setDeviceOrientation(DeviceOrientation orientation) throws UIAException;
 
     void setLocation(double latitude, double longitude) throws UIAException;
+
+    void captureRectWithName(Rectangle2D rect, String imageName) throws UIAException;
+
+    void captureScreenWithName(String imageName) throws UIAException;
 
     void clickVolumeDown() throws UIAException;
 
