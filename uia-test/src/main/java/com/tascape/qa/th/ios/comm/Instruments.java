@@ -41,6 +41,7 @@ import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Server;
 import com.tascape.qa.th.ios.model.UIAException;
 import com.tascape.qa.th.libx.DefaultExecutor;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,6 +98,8 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     private ExecuteWatchdog instrumentsDog;
 
     private ESH instrumentsStreamHandler;
+
+    private final Path uiaResultsPath = Paths.get(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
 
     private final String uuid;
 
@@ -246,6 +249,10 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         }
     }
 
+    public Path getUiaResultsPath() {
+        return uiaResultsPath;
+    }
+
     private NGServer startNailGunServer() throws InterruptedException {
         NGServer ngs = new NGServer(null, 0);
         new Thread(ngs).start();
@@ -295,6 +302,10 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         FileUtils.write(js, sb);
         LOG.trace("{}\n{}", js, sb);
 
+        uiaResultsPath.toFile().mkdirs();
+        if (!uiaResultsPath.toFile().exists()) {
+            throw new IOException("Cannot create Instrument UIARESULTSPATH " + uiaResultsPath);
+        }
         CommandLine cmdLine = new CommandLine("instruments");
         cmdLine.addArgument("-t");
         cmdLine.addArgument(TRACE_TEMPLATE);
@@ -306,7 +317,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         cmdLine.addArgument(js.getAbsolutePath());
         cmdLine.addArgument("-e");
         cmdLine.addArgument("UIARESULTSPATH");
-        cmdLine.addArgument(Paths.get(System.getProperty("java.io.tmpdir")).toFile().getAbsolutePath());
+        cmdLine.addArgument(uiaResultsPath.toFile().getAbsolutePath());
         LOG.trace("{}", cmdLine.toString());
         ExecuteWatchdog watchdog = new ExecuteWatchdog(Long.MAX_VALUE);
         Executor executor = new DefaultExecutor();

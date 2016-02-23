@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.tascape.qa.th.SystemConfiguration;
 import com.tascape.qa.th.Utils;
+import com.tascape.qa.th.exception.EntityDriverException;
 import com.tascape.qa.th.ios.comm.Instruments;
 import com.tascape.qa.th.ios.model.DeviceOrientation;
 import com.tascape.qa.th.ios.model.UIAAlert;
@@ -29,10 +30,15 @@ import com.tascape.qa.th.ios.model.UIAElement;
 import com.tascape.qa.th.ios.model.UIAException;
 import com.tascape.qa.th.ios.model.UIATarget;
 import com.tascape.qa.th.ios.model.UIAWindow;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -269,6 +275,23 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     public void setTextField(String javaScript, String value) throws UIAException {
         String js = "var e = " + javaScript + "; e.setValue('" + value + "');";
         instruments.runJavaScript(js).forEach(l -> LOG.trace(l));
+    }
+
+    @Override
+    public File takeDeviceScreenshot() throws EntityDriverException {
+        try {
+            LOG.debug("Take screenshot");
+            File png = this.saveIntoFile("ss", "png", "");
+            String name = UUID.randomUUID().toString();
+            this.captureScreenWithName(name);
+            File f = FileUtils.listFiles(instruments.getUiaResultsPath().toFile(), new String[]{"png"}, true).stream()
+                .filter(p -> p.getName().contains(name)).findFirst().get();
+            LOG.trace("{}", f);
+            FileUtils.copyFile(f, png);
+            return png;
+        } catch (IOException ex) {
+            throw new EntityDriverException(ex);
+        }
     }
 
     @Override
@@ -573,8 +596,11 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         UiAutomationDevice d = new UiAutomationDevice();
         try {
             d.start("Movies", 5000);
-
             LOG.debug("model {}", d.model());
+
+            File png = d.takeDeviceScreenshot();
+            LOG.debug("png {}", png);
+            Desktop.getDesktop().open(png);
         } catch (Throwable t) {
             LOG.error("", t);
         } finally {
