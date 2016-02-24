@@ -28,6 +28,7 @@ import com.tascape.qa.th.ios.model.UIAAlert;
 import com.tascape.qa.th.ios.model.UIAApplication;
 import com.tascape.qa.th.ios.model.UIAElement;
 import com.tascape.qa.th.ios.model.UIAException;
+import com.tascape.qa.th.ios.model.UIAKeyboard;
 import com.tascape.qa.th.ios.model.UIATarget;
 import com.tascape.qa.th.ios.model.UIAWindow;
 import java.awt.Desktop;
@@ -580,6 +581,21 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         return instruments;
     }
 
+//    @Override
+//    public String bundleID() throws UIAException {
+//        String js = "UIALogger.logMessage(app.bundleID());";
+//        return Instruments.getLogMessage(instruments.runJavaScript(js));
+//    }
+    @Override
+    public UIAKeyboard keyboard() throws UIAException {
+        return UIAApplication.super.getKeyboard(instruments);
+    }
+
+//    @Override
+//    public String version() throws UIAException {
+//        String js = "UIALogger.logMessage(app.version());";
+//        return Instruments.getLogMessage(instruments.runJavaScript(js));
+//    }
     private Dimension loadDisplaySize() throws UIAException {
         List<String> lines = this.instruments.runJavaScript("window.logElement();");
         Dimension dimension = new Dimension();

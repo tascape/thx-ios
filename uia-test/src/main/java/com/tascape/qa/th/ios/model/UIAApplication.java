@@ -15,6 +15,8 @@
  */
 package com.tascape.qa.th.ios.model;
 
+import com.tascape.qa.th.ios.comm.Instruments;
+
 /**
  *
  * @author linsong wang
@@ -22,4 +24,16 @@ package com.tascape.qa.th.ios.model;
 public interface UIAApplication {
 
     UIAWindow mainWindow() throws UIAException;
+
+//    String bundleID() throws UIAException;
+
+    UIAKeyboard keyboard() throws UIAException;
+
+//    String version() throws UIAException;
+
+    default UIAKeyboard getKeyboard(Instruments instruments) throws UIAException {
+        UIAKeyboard kb = new UIAKeyboard();
+        kb.setInstruments(instruments);
+        return kb;
+    }
 }

@@ -21,4 +21,7 @@ package com.tascape.qa.th.ios.model;
  */
 public class UIAKeyboard extends UIAElement {
 
+    public void typeString(String string) throws UIAException {
+        this.getInstruments().runJavaScript("app.keyboard().typeString('" + string + "')");
+    }
 }
