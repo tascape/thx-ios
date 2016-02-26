@@ -165,7 +165,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         }
         responseQueue.clear();
         String reqId = UUID.randomUUID().toString();
-        LOG.trace("sending js {}", javaScript);
+        LOG.debug("send: {}", javaScript);
         try {
             javaScriptQueue.offer("UIALogger.logMessage('" + reqId + " start');", JAVASCRIPT_TIMEOUT_SECOND,
                 TimeUnit.SECONDS);
