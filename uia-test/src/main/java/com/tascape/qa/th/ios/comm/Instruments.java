@@ -214,7 +214,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             if (res.contains(INSTRUMENTS_ERROR) || res.contains(INSTRUMENTS_FAIL)) {
                 LOG.error(res);
             } else {
-                LOG.debug(res);
+                LOG.trace(res);
             }
         }
         javaScriptQueue.clear();

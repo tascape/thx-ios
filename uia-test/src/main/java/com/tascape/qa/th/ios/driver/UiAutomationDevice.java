@@ -298,6 +298,12 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     @Override
     public UIAWindow mainWindow() throws UIAException {
         List<String> lines = loadElementTree();
+        try {
+            File f = this.saveIntoFile("window-element-tree", "txt", "");
+            FileUtils.writeLines(f, lines);
+        } catch (IOException ex) {
+            LOG.warn(ex.getMessage());
+        }
         UIAWindow window = UIA.parseElementTree(lines);
         window.setInstruments(instruments);
         return window;
