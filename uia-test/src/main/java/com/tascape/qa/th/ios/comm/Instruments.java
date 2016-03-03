@@ -160,6 +160,10 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     }
 
     public List<String> runJavaScript(String javaScript) throws UIAException {
+        return this.runJavaScript(javaScript, true);
+    }
+
+    public List<String> runJavaScript(String javaScript, boolean debug) throws UIAException {
         if (responseQueue.contains(INSTRUMENTS_POISON)) {
             throw new UIAException("Instruments error");
         }
@@ -213,6 +217,8 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             }
             if (res.contains(INSTRUMENTS_ERROR) || res.contains(INSTRUMENTS_FAIL)) {
                 LOG.error(res);
+            } else if (debug) {
+                LOG.debug(res);
             } else {
                 LOG.trace(res);
             }

@@ -118,7 +118,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     public List<String> loadElementTree() throws UIAException {
-        return instruments.runJavaScript("window.logElementTree();");
+        return instruments.runJavaScript("window.logElementTree();", false);
     }
 
     /**
@@ -580,7 +580,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     public void logElementTree() throws UIAException {
-        instruments.runJavaScript("window.logElementTree();").forEach(l -> LOG.debug(l));
+        instruments.runJavaScript("window.logElementTree();");
     }
 
     public Instruments getInstruments() {
