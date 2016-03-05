@@ -33,6 +33,8 @@ public abstract class App extends EntityDriver {
 
     public abstract int getLaunchDelayMillis();
 
+    public abstract int getLaunchRetries();
+
     protected String version;
 
     @Override
@@ -49,7 +51,7 @@ public abstract class App extends EntityDriver {
     }
 
     public void launch() throws Exception {
-        device.start(this.getName(), getLaunchDelayMillis());
+        device.start(this.getName(), getLaunchRetries(), getLaunchDelayMillis());
     }
 
     public UiAutomationDevice getDevice() {

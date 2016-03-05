@@ -168,6 +168,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
 
     public List<String> runJavaScript(String javaScript, boolean debug) throws UIAException {
         if (responseQueue.contains(INSTRUMENTS_POISON)) {
+            responseQueue.clear();
             throw new UIAException("Instruments error");
         }
         responseQueue.clear();

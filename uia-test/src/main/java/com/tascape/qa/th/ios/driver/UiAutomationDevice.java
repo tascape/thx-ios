@@ -71,7 +71,28 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         super(uuid);
     }
 
+    /**
+     * Launches app by name, and verifies the main widown is on screen.
+     *
+     * @param appName     app name
+     * @param delayMillis wait for app to start
+     *
+     * @throws Exception if app does not launch
+     */
     public void start(String appName, int delayMillis) throws Exception {
+        this.start(appName, 1, delayMillis);
+    }
+
+    /**
+     * Launches app by name, and verifies the main widown is on screen.
+     *
+     * @param appName     app name
+     * @param retries     number of retries of instruments command
+     * @param delayMillis wait for app to start
+     *
+     * @throws Exception if app does not launch
+     */
+    public void start(String appName, int retries, int delayMillis) throws Exception {
         if (instruments != null) {
             instruments.disconnect();
         } else {
@@ -80,7 +101,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         if (StringUtils.isNotEmpty(alertHandler)) {
             instruments.setPreTargetJavaScript(alertHandler);
         }
-        for (char c : "12".toCharArray()) {
+        for (int i = 0; i < retries; i++) {
             instruments.connect();
             Utils.sleep(delayMillis, "Wait for app to start");
             long end = System.currentTimeMillis() + TIMEOUT_SECOND * 500;
@@ -91,7 +112,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
                         return;
                     }
                 } catch (Exception ex) {
-                    LOG.warn(ex.getMessage());
+                    LOG.warn("cannot log window", ex);
                     Thread.sleep(5000);
                 }
             }
@@ -137,6 +158,22 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     /**
+     * Checks if an element is valid (exists) on current UI. This requires a call to the underlying Accessibility
+     * framework to ensure the validity of the result. See Apple UIAElement Class Reference .
+     *
+     * @param javaScript such as "window.tabBars()['MainTabBar']"
+     *
+     * @return true if element identified by javascript exists
+     *
+     * @throws UIAException in case of any issue
+     */
+    public boolean checkIsValid(String javaScript) throws UIAException {
+        String js = "var e = " + javaScript + "; UIALogger.logMessage(e.checkIsValid().toString());";
+        String res = Instruments.getLogMessage(instruments.runJavaScript(js));
+        return Boolean.parseBoolean(res);
+    }
+
+    /**
      * Checks if an element exists on current UI, based on element type.
      *
      * @param <T>        sub-class of UIAElement
@@ -148,7 +185,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * @throws UIAException in case of any issue
      */
     public <T extends UIAElement> boolean doesElementExist(String javaScript, Class<T> type) throws UIAException {
-        return doesElementExist(javaScript, type, null);
+        return checkIsValid(javaScript);
     }
 
     /**
@@ -557,6 +594,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void delay(int timeInterval) throws UIAException {
         this.instruments.runJavaScript("target.delay(" + timeInterval + ");");
     }
