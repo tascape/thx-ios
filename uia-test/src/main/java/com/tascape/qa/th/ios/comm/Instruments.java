@@ -50,6 +50,7 @@ import java.util.Observer;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -63,6 +64,8 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     private static final Logger LOG = LoggerFactory.getLogger(Instruments.class);
 
     public static final String SYSPROP_JS_TIMEOUT_SECOND = "qa.th.comm.ios.JS_TIMEOUT_SECOND";
+
+    public static final String CACHE_DIR = "/Library/Caches/com.apple.dt.instruments";
 
     public static final String UIA_SCRIPT_EXCEPTION
         = "Automation Instrument ran into an exception while trying to run the script.  UIAScriptAgentSignaledException";
@@ -80,7 +83,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     private static final String INSTRUMENTS_POISON = UUID.randomUUID().toString();
 
     static {
-        new CacheCleaner().start();
+        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new CacheCleaner(), 0, 10, TimeUnit.MINUTES);
     }
 
     private final SynchronousQueue<String> javaScriptQueue = new SynchronousQueue<>();
@@ -417,22 +420,22 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         }
     }
 
-    private static class CacheCleaner extends Thread {
-        private static final File CACHE_DIR = Paths.get("/Library/Caches/com.apple.dt.instruments").toFile();
+    private static class CacheCleaner implements Runnable {
+        private final File cacheDir = Paths.get(CACHE_DIR).toFile();
 
-        private static final long CUTOFF_DATE = System.currentTimeMillis() - 2 * 24 * 3600000;
+        private final long cutoffTime = System.currentTimeMillis() - 3600000;
 
         @Override
         public void run() {
-            if (CACHE_DIR.exists()) {
-                Stream.of(CACHE_DIR.listFiles(File::isDirectory))
-                    .filter(file -> file.lastModified() < CUTOFF_DATE)
+            if (cacheDir.exists()) {
+                Stream.of(cacheDir.listFiles(File::isDirectory))
+                    .filter(file -> file.lastModified() < cutoffTime)
                     .forEach(file -> {
                         LOG.debug("Delete {}", file);
                         FileUtils.deleteQuietly(file);
                     });
             } else {
-                LOG.warn("Cannot file cache directory {}", CACHE_DIR);
+                LOG.warn("Cannot file cache directory {}", cacheDir);
             }
         }
     }
