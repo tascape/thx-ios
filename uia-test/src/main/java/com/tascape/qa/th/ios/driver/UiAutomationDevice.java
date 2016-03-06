@@ -276,18 +276,19 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * @param type type of uia element, such as UIATabBar
      * @param name name of an element, such as "MainTabBar"
      *
-     * @return true if element identified by type and name exists, or false if timeout
+     * @return element object if element identified by type and name exists, or null if timeout
      *
      * @throws UIAException                   in case of UIA issue
      * @throws java.lang.InterruptedException in case of interruption
      */
-    public <T extends UIAElement> boolean waitForElement(Class<T> type, String name) throws UIAException,
+    public <T extends UIAElement> T waitForElement(Class<T> type, String name) throws UIAException,
         InterruptedException {
         long end = System.currentTimeMillis() + TIMEOUT_SECOND * 1000;
         while (System.currentTimeMillis() < end) {
             try {
-                if (mainWindow().findElement(type, name) != null) {
-                    return true;
+                T element = mainWindow().findElement(type, name);
+                if (element != null) {
+                    return element;
                 }
             } catch (Exception ex) {
                 LOG.warn("{}", ex.getMessage());
@@ -295,7 +296,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
             }
             Utils.sleep(5000, "wait for " + type.getSimpleName() + "[" + name + "]");
         }
-        return false;
+        return null;
     }
 
     public <T extends UIAElement> String getElementName(String javaScript, Class<T> type) throws UIAException {

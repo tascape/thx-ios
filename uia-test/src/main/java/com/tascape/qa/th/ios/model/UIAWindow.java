@@ -61,4 +61,8 @@ public class UIAWindow extends UIAElement {
     public UIALink findLink(String name) {
         return this.findElement(UIALink.class, name);
     }
+
+    public UIATableCell findCell(String name) {
+        return this.findElement(UIATableCell.class, name);
+    }
 }
