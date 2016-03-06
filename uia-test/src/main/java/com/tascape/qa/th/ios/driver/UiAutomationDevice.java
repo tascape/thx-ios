@@ -353,7 +353,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     @Override
     public void captureScreenWithName(String imageName) throws UIAException {
-        instruments.runJavaScript("target.captureScreenWithName('" + imageName + "');");
+        instruments.runJavaScript("target.captureScreenWithName('" + imageName + "');", false);
     }
 
     @Override

@@ -438,6 +438,14 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             } else {
                 LOG.warn("Cannot file cache directory {}", cacheDir);
             }
+            File trace = new File(System.getProperty("user.dir"));
+            Stream.of(trace.listFiles(File::isDirectory))
+                .filter(file -> file.lastModified() < cutoffTime)
+                .filter(file -> file.getName().startsWith("instrumentscli"))
+                .forEach(file -> {
+                    LOG.debug("Delete {}", file);
+                    FileUtils.deleteQuietly(file);
+                });
         }
     }
 
