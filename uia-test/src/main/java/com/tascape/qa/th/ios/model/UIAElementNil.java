@@ -19,6 +19,6 @@ package com.tascape.qa.th.ios.model;
  *
  * @author linsong wang
  */
-public class UIAElementNil {
+public class UIAElementNil extends UIAElement {
 
 }

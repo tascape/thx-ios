@@ -83,7 +83,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     private static final String INSTRUMENTS_POISON = UUID.randomUUID().toString();
 
     static {
-        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new CacheCleaner(), 0, 10, TimeUnit.MINUTES);
+        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new CacheCleaner(), 0, 15, TimeUnit.MINUTES);
     }
 
     private final SynchronousQueue<String> javaScriptQueue = new SynchronousQueue<>();
@@ -424,10 +424,12 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     private static class CacheCleaner implements Runnable {
         private final File cacheDir = Paths.get(CACHE_DIR).toFile();
 
-        private final long cutoffTime = System.currentTimeMillis() - 3600000;
+        private final File trace = new File(System.getProperty("user.dir"));
 
         @Override
         public void run() {
+            long cutoffTime = System.currentTimeMillis() - 1800000;
+
             if (cacheDir.exists()) {
                 Stream.of(cacheDir.listFiles(File::isDirectory))
                     .filter(file -> file.lastModified() < cutoffTime)
@@ -438,7 +440,6 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             } else {
                 LOG.warn("Cannot file cache directory {}", cacheDir);
             }
-            File trace = new File(System.getProperty("user.dir"));
             Stream.of(trace.listFiles(File::isDirectory))
                 .filter(file -> file.lastModified() < cutoffTime)
                 .filter(file -> file.getName().startsWith("instrumentscli"))
