@@ -61,6 +61,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     private Dimension screenDimension;
 
+    private UIAWindow currentWindow;
+
     private String alertHandler = "";
 
     public UiAutomationDevice() throws SDKException {
@@ -333,6 +335,13 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         }
     }
 
+    /**
+     * The internal currentWindow is also updated upon the successful return of this method.
+     *
+     * @return a UIAWindow object representing current window element tree
+     *
+     * @throws UIAException in case of error
+     */
     @Override
     public UIAWindow mainWindow() throws UIAException {
         List<String> lines = loadElementTree();
@@ -344,6 +353,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         }
         UIAWindow window = UIA.parseElementTree(lines);
         window.setInstruments(instruments);
+        this.currentWindow = window;
         return window;
     }
 
@@ -634,6 +644,10 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     @Override
     public UIAKeyboard keyboard() throws UIAException {
         return UIAApplication.super.getKeyboard(instruments);
+    }
+
+    public UIAWindow getCurrentWindow() {
+        return currentWindow;
     }
 
 //    @Override
