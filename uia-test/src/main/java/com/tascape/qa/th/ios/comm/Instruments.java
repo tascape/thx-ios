@@ -70,7 +70,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     public static final String UIA_SCRIPT_EXCEPTION
         = "Automation Instrument ran into an exception while trying to run the script.  UIAScriptAgentSignaledException";
 
-    public static final String INSTRUMENTS_FAIL = "Fail: The target application appears to have died";
+    public static final String APP_DEAD = "Fail: The target application appears to have died";
 
     public static final String INSTRUMENTS_ERROR = "Error:";
 
@@ -166,7 +166,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         return this.runJavaScript(javaScript, true);
     }
 
-    public List<String> runJavaScript(String javaScript, boolean debug) throws UIAException {
+    public List<String> runJavaScript(String javaScript, boolean debug) {
         if (responseQueue.contains(INSTRUMENTS_POISON)) {
             responseQueue.clear();
             throw new UIAException("Instruments error");
@@ -219,7 +219,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             } else {
                 lines.add(res);
             }
-            if (res.contains(INSTRUMENTS_ERROR) || res.contains(INSTRUMENTS_FAIL)) {
+            if (res.contains(INSTRUMENTS_ERROR) || res.contains(APP_DEAD)) {
                 LOG.error(res);
             } else if (debug) {
                 LOG.debug(res);

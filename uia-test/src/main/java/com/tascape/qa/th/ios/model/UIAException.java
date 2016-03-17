@@ -15,13 +15,11 @@
  */
 package com.tascape.qa.th.ios.model;
 
-import com.tascape.qa.th.exception.EntityDriverException;
-
 /**
  *
  * @author linsong wang
  */
-public class UIAException extends EntityDriverException {
+public class UIAException extends RuntimeException {
     private static final long serialVersionUID = 8493532L;
 
     public UIAException(String message) {
