@@ -221,6 +221,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             }
             if (res.contains(INSTRUMENTS_ERROR) || res.contains(APP_DEAD)) {
                 LOG.error(res);
+                break;
             } else if (debug) {
                 LOG.debug(res);
             } else {
@@ -228,7 +229,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             }
         }
         javaScriptQueue.clear();
-        if (lines.stream().filter(l -> l.contains(INSTRUMENTS_ERROR)).findAny().isPresent()) {
+        if (lines.stream().filter(l -> l.contains(INSTRUMENTS_ERROR) || l.contains(APP_DEAD)).findAny().isPresent()) {
             throw new UIAException("instruments error");
         }
         return lines;

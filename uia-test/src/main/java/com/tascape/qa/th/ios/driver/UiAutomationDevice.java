@@ -136,11 +136,11 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         this.alertHandler = javaScript;
     }
 
-    public List<String> runJavaScript(String javaScript) throws UIAException {
+    public List<String> runJavaScript(String javaScript) {
         return instruments.runJavaScript(javaScript);
     }
 
-    public List<String> loadElementTree() throws UIAException {
+    public List<String> loadElementTree() {
         return instruments.runJavaScript("window.logElementTree();", false);
     }
 
@@ -149,10 +149,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * http://www.paintcodeapp.com/news/ultimate-guide-to-iphone-resolutions
      *
      * @return the screen size in points
-     *
-     * @throws UIAException in case of any issue
      */
-    public Dimension getDisplaySize() throws UIAException {
+    public Dimension getDisplaySize() {
         if (screenDimension == null) {
             screenDimension = loadDisplaySize();
         }
@@ -166,10 +164,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * @param javaScript such as "window.tabBars()['MainTabBar']"
      *
      * @return true if element identified by javascript exists
-     *
-     * @throws UIAException in case of any issue
      */
-    public boolean checkIsValid(String javaScript) throws UIAException {
+    public boolean checkIsValid(String javaScript) {
         String js = "var e = " + javaScript + "; UIALogger.logMessage(e.checkIsValid().toString());";
         String res = Instruments.getLogMessage(instruments.runJavaScript(js));
         return Boolean.parseBoolean(res);
@@ -183,10 +179,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * @param type       type of uia element, such as UIATabBar
      *
      * @return true if element identified by javascript exists
-     *
-     * @throws UIAException in case of any issue
      */
-    public <T extends UIAElement> boolean doesElementExist(String javaScript, Class<T> type) throws UIAException {
+    public <T extends UIAElement> boolean doesElementExist(String javaScript, Class<T> type) {
         return checkIsValid(javaScript);
     }
 
@@ -200,8 +194,6 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * @param name       name of an element, such as "MainTabBar"
      *
      * @return true if element identified by javascript exists
-     *
-     * @throws UIAException in case of any issue
      */
     public <T extends UIAElement> boolean doesElementExist(String javaScript, Class<T> type, String name) throws
         UIAException {
@@ -220,10 +212,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * @param name name of an element, such as "MainTabBar"
      *
      * @return true if element identified by type and name exists, or false if timeout
-     *
-     * @throws UIAException in case of any issue
      */
-    public <T extends UIAElement> boolean doesElementExist(Class<T> type, String name) throws UIAException {
+    public <T extends UIAElement> boolean doesElementExist(Class<T> type, String name) {
         return mainWindow().findElement(type, name) != null;
     }
 
@@ -237,11 +227,9 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      *
      * @return true if element identified by javascript exists, or false if timeout
      *
-     * @throws UIAException                   in case of UIA issue
      * @throws java.lang.InterruptedException in case of interruption
      */
-    public <T extends UIAElement> boolean waitForElement(String javaScript, Class<T> type)
-        throws UIAException, InterruptedException {
+    public <T extends UIAElement> boolean waitForElement(String javaScript, Class<T> type) throws InterruptedException {
         return this.waitForElement(javaScript, type, null);
     }
 
@@ -256,11 +244,10 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      *
      * @return true if element identified by javascript exists, or false if timeout
      *
-     * @throws UIAException                   in case of UIA issue
      * @throws java.lang.InterruptedException in case of interruption
      */
     public <T extends UIAElement> boolean waitForElement(String javaScript, Class<T> type, String name)
-        throws UIAException, InterruptedException {
+        throws InterruptedException {
         long end = System.currentTimeMillis() + TIMEOUT_SECOND * 1000;
         while (System.currentTimeMillis() < end) {
             if (doesElementExist(javaScript, type, name)) {
@@ -280,11 +267,9 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      *
      * @return element object if element identified by type and name exists, or null if timeout
      *
-     * @throws UIAException                   in case of UIA issue
      * @throws java.lang.InterruptedException in case of interruption
      */
-    public <T extends UIAElement> T waitForElement(Class<T> type, String name) throws UIAException,
-        InterruptedException {
+    public <T extends UIAElement> T waitForElement(Class<T> type, String name) throws InterruptedException {
         long end = System.currentTimeMillis() + TIMEOUT_SECOND * 1000;
         while (System.currentTimeMillis() < end) {
             try {
@@ -301,19 +286,19 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         return null;
     }
 
-    public <T extends UIAElement> String getElementName(String javaScript, Class<T> type) throws UIAException {
+    public <T extends UIAElement> String getElementName(String javaScript, Class<T> type) {
         String js = "var e = " + javaScript + "; e.logElement();";
         String line = instruments.runJavaScript(js).stream()
             .filter(l -> l.contains(type.getSimpleName())).findFirst().get();
         return UIA.parseElement(line).name();
     }
 
-    public <T extends UIAElement> String getElementValue(String javaScript, Class<T> type) throws UIAException {
+    public <T extends UIAElement> String getElementValue(String javaScript, Class<T> type) {
         String js = "var e = " + javaScript + "; UIALogger.logMessage(e.value());";
         return Instruments.getLogMessage(instruments.runJavaScript(js));
     }
 
-    public void setTextField(String javaScript, String value) throws UIAException {
+    public void setTextField(String javaScript, String value) {
         String js = "var e = " + javaScript + "; e.setValue('" + value + "');";
         instruments.runJavaScript(js).forEach(l -> LOG.trace(l));
     }
@@ -339,11 +324,9 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * The internal currentWindow is also updated upon the successful return of this method.
      *
      * @return a UIAWindow object representing current window element tree
-     *
-     * @throws UIAException in case of error
      */
     @Override
-    public UIAWindow mainWindow() throws UIAException {
+    public UIAWindow mainWindow() {
         List<String> lines = loadElementTree();
         try {
             File f = this.saveIntoFile("window-element-tree", "txt", "");
@@ -358,238 +341,235 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     @Override
-    public void captureRectWithName(Rectangle2D rect, String imageName) throws UIAException {
+    public void captureRectWithName(Rectangle2D rect, String imageName) {
         instruments.runJavaScript("target.captureScreenWithName(,'" + imageName + "');");
     }
 
     @Override
-    public void captureScreenWithName(String imageName) throws UIAException {
+    public void captureScreenWithName(String imageName) {
         instruments.runJavaScript("target.captureScreenWithName('" + imageName + "');", false);
     }
 
     @Override
-    public void deactivateAppForDuration(int duration) throws UIAException {
+    public void deactivateAppForDuration(int duration) {
         instruments.runJavaScript("UIALogger.logMessage(target.deactivateAppForDuration(" + duration + "));");
     }
 
     @Override
-    public String model() throws UIAException {
+    public String model() {
         return Instruments.getLogMessage(instruments.runJavaScript("UIALogger.logMessage(target.model());"));
     }
 
     @Override
-    public String name() throws UIAException {
+    public String name() {
         return Instruments.getLogMessage(instruments.runJavaScript("UIALogger.logMessage(target.name());"));
     }
 
     @Override
-    public Rectangle2D rect() throws UIAException {
+    public Rectangle2D rect() {
         List<String> lines = instruments.runJavaScript("UIALogger.logMessage(target.rect());");
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public String systemName() throws UIAException {
+    public String systemName() {
         return Instruments.getLogMessage(instruments.runJavaScript("UIALogger.logMessage(target.systemName());"));
     }
 
     @Override
-    public String systemVersion() throws UIAException {
+    public String systemVersion() {
         return Instruments.getLogMessage(instruments.runJavaScript("UIALogger.logMessage(target.systemVersion());"));
     }
 
     @Override
-    public DeviceOrientation deviceOrientation() throws UIAException {
+    public DeviceOrientation deviceOrientation() {
         instruments.runJavaScript("UIALogger.logMessage(target.deviceOrientation());");
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void setDeviceOrientation(DeviceOrientation orientation) throws UIAException {
+    public void setDeviceOrientation(DeviceOrientation orientation) {
         instruments.runJavaScript("target.setDeviceOrientation(" + orientation.ordinal() + ");");
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void setLocation(double latitude, double longitude) throws UIAException {
+    public void setLocation(double latitude, double longitude) {
         instruments.runJavaScript("target.setLocation({latitude:" + latitude + ", longitude:" + longitude + "});");
     }
 
     @Override
-    public void clickVolumeDown() throws UIAException {
+    public void clickVolumeDown() {
         this.instruments.runJavaScript("target.clickVolumeDown();");
     }
 
     @Override
-    public void clickVolumeUp() throws UIAException {
+    public void clickVolumeUp() {
         this.instruments.runJavaScript("target.clickVolumeUp();");
     }
 
     @Override
-    public void holdVolumeDown(int duration) throws UIAException {
+    public void holdVolumeDown(int duration) {
         this.instruments.runJavaScript("target.holdVolumeDown(" + duration + ");");
     }
 
     @Override
-    public void holdVolumeUp(int duration) throws UIAException {
+    public void holdVolumeUp(int duration) {
         this.instruments.runJavaScript("target.holdVolumeUp(" + duration + ");");
     }
 
     @Override
-    public void lockForDuration(int duration) throws UIAException {
+    public void lockForDuration(int duration) {
         this.instruments.runJavaScript("target.lockForDuration(" + duration + ");");
     }
 
     @Override
-    public void shake() throws UIAException {
+    public void shake() {
         this.instruments.runJavaScript("target.shake();");
     }
 
-    public void dragHalfScreenUp() throws UIAException {
+    public void dragHalfScreenUp() {
         Dimension dimension = this.getDisplaySize();
         this.dragFromToForDuration(new Point2D.Float(dimension.width / 2, dimension.height / 2),
             new Point2D.Float(dimension.width / 2, 0), 1);
     }
 
-    public void dragHalfScreenDown() throws UIAException {
+    public void dragHalfScreenDown() {
         Dimension dimension = this.getDisplaySize();
         this.dragFromToForDuration(new Point2D.Float(dimension.width / 2, dimension.height / 2),
             new Point2D.Float(dimension.width / 2, dimension.height), 1);
     }
 
     @Override
-    public void dragFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
+    public void dragFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) {
         this.instruments.runJavaScript("target.dragFromToForDuration(" + toCGString(from) + ", "
             + toCGString(to) + ", " + duration + ");");
     }
 
     @Override
-    public void dragFromToForDuration(UIAElement fromElement, UIAElement toElement, int duration) throws UIAException {
+    public void dragFromToForDuration(UIAElement fromElement, UIAElement toElement, int duration) {
         this.dragFromToForDuration(fromElement.toJavaScript(), toElement.toJavaScript(), duration);
     }
 
     @Override
-    public void dragFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException {
+    public void dragFromToForDuration(String fromJavaScript, String toJavaScript, int duration) {
         this.instruments.runJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
             + "target.dragFromToForDuration(e1, e2, " + duration + ");");
     }
 
     @Override
-    public void doubleTap(float x, float y) throws UIAException {
+    public void doubleTap(float x, float y) {
         this.instruments.runJavaScript("target.doubleTap(" + toCGString(x, y) + ");");
     }
 
     @Override
-    public void doubleTap(UIAElement element) throws UIAException {
+    public void doubleTap(UIAElement element) {
         this.doubleTap(element.toJavaScript());
     }
 
     @Override
-    public void doubleTap(String javaScript) throws UIAException {
+    public void doubleTap(String javaScript) {
         this.instruments.runJavaScript("var e = " + javaScript + "; e.doubleTap();");
     }
 
     @Override
-    public void flickFromTo(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
+    public void flickFromTo(Point2D.Float from, Point2D.Float to, int duration) {
         this.instruments.runJavaScript(
             "target.flickFromTo(" + toCGString(from) + ", " + toCGString(to) + ", " + duration + ");");
     }
 
     @Override
-    public void flickFromTo(UIAElement fromElement, UIAElement toElement, int duration) throws UIAException {
+    public void flickFromTo(UIAElement fromElement, UIAElement toElement, int duration) {
         this.flickFromTo(fromElement.toJavaScript(), toElement.toJavaScript(), duration);
     }
 
     @Override
-    public void flickFromTo(String fromJavaScript, String toJavaScript, int duration) throws UIAException {
+    public void flickFromTo(String fromJavaScript, String toJavaScript, int duration) {
         this.instruments.runJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
             + "target.flickFromTo(e1, e2, " + duration + ");");
     }
 
     @Override
-    public void pinchCloseFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
+    public void pinchCloseFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) {
         this.instruments.runJavaScript("target.pinchCloseFromToForDuration(" + toCGString(from) + ", "
             + toCGString(to) + ", " + duration + ");");
     }
 
     @Override
-    public void pinchCloseFromToForDuration(UIAElement fromElement, UIAElement toElement, int duration) throws
-        UIAException {
+    public void pinchCloseFromToForDuration(UIAElement fromElement, UIAElement toElement, int duration) {
         this.pinchCloseFromToForDuration(fromElement.toJavaScript(), toElement.toJavaScript(), duration);
     }
 
     @Override
-    public void pinchCloseFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws
-        UIAException {
+    public void pinchCloseFromToForDuration(String fromJavaScript, String toJavaScript, int duration) {
         this.instruments.runJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
             + "target.pinchCloseFromToForDuration(e1, e2, " + duration + ");");
     }
 
     @Override
-    public void pinchOpenFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException {
+    public void pinchOpenFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) {
         this.instruments.runJavaScript("target.pinchOpenFromToForDuration(" + toCGString(from) + ", "
             + toCGString(to) + ", " + duration + ");");
     }
 
     @Override
-    public void pinchOpenFromToForDuration(UIAElement fromElement, UIAElement toElement, int duration) throws
-        UIAException {
+    public void pinchOpenFromToForDuration(UIAElement fromElement, UIAElement toElement, int duration) {
         this.pinchOpenFromToForDuration(fromElement.toJavaScript(), toElement.toJavaScript(), duration);
     }
 
     @Override
-    public void pinchOpenFromToForDuration(String fromJavaScript, String toJavaScript, int duration) throws UIAException {
+    public void pinchOpenFromToForDuration(String fromJavaScript, String toJavaScript, int duration) {
         this.instruments.runJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
             + "target.pinchOpenFromToForDuration(e1, e2, " + duration + ");");
     }
 
     @Override
-    public void tap(float x, float y) throws UIAException {
+    public void tap(float x, float y) {
         this.instruments.runJavaScript("target.tap(" + toCGString(x, y) + ");");
     }
 
-    public void tap(Class<? extends UIAElement> type, String name) throws UIAException {
+    public void tap(Class<? extends UIAElement> type, String name) {
         UIAElement element = this.mainWindow().findElement(type, name);
         this.tap(element);
     }
 
     @Override
-    public void tap(UIAElement element) throws UIAException {
+    public void tap(UIAElement element) {
         this.tap(element.toJavaScript());
     }
 
     @Override
-    public void tap(String javaScript) throws UIAException {
+    public void tap(String javaScript) {
         this.instruments.runJavaScript("var e = " + javaScript + "; e.tap();");
     }
 
     @Override
-    public void touchAndHold(Point2D.Float point, int duration) throws UIAException {
+    public void touchAndHold(Point2D.Float point, int duration) {
         this.instruments.runJavaScript("target.touchAndHold(" + toCGString(point) + ", " + duration + ");");
     }
 
     @Override
-    public void touchAndHold(UIAElement element, int duration) throws UIAException {
+    public void touchAndHold(UIAElement element, int duration) {
         this.instruments.runJavaScript("var e = " + element.toJavaScript() + "; e.touchAndHold(e, " + duration + ");");
     }
 
     @Override
-    public void touchAndHold(String javaScript, int duration) throws UIAException {
+    public void touchAndHold(String javaScript, int duration) {
         this.instruments.runJavaScript("var e = " + javaScript + "; target.touchAndHold(e, " + duration + ");");
     }
 
     @Override
-    public void popTimeout() throws UIAException {
+    public void popTimeout() {
         this.instruments.runJavaScript("target.popTimeout();");
     }
 
     @Override
-    public void pushTimeout(int timeoutValue) throws UIAException {
+    public void pushTimeout(int timeoutValue) {
         this.instruments.runJavaScript("target.pushTimeout(" + timeoutValue + ");");
     }
 
     @Override
-    public void setTimeout(int timeout) throws UIAException {
+    public void setTimeout(int timeout) {
         this.instruments.runJavaScript("target.setTimeout(" + timeout + ");");
     }
 
@@ -597,16 +577,14 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * Unsupported yet.
      *
      * @return int
-     *
-     * @throws UIAException in case of any issue
      */
     @Override
-    public int timeout() throws UIAException {
+    public int timeout() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void delay(int timeInterval) throws UIAException {
+    public void delay(int timeInterval) {
         this.instruments.runJavaScript("target.delay(" + timeInterval + ");");
     }
 
@@ -616,19 +594,17 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * @param alert alert object
      *
      * @return true/false
-     *
-     * @throws UIAException in case of any issue
      */
     @Override
-    public boolean onAlert(UIAAlert alert) throws UIAException {
+    public boolean onAlert(UIAAlert alert) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void setAlertAutoDismiss() throws UIAException {
+    public void setAlertAutoDismiss() {
         this.alertHandler = "UIATarget.onAlert = function onAlert(alert) {return false;}";
     }
 
-    public void logElementTree() throws UIAException {
+    public void logElementTree() {
         instruments.runJavaScript("window.logElementTree();");
     }
 
@@ -637,12 +613,12 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
 //    @Override
-//    public String bundleID() throws UIAException {
+//    public String bundleID() {
 //        String js = "UIALogger.logMessage(app.bundleID());";
 //        return Instruments.getLogMessage(instruments.runJavaScript(js));
 //    }
     @Override
-    public UIAKeyboard keyboard() throws UIAException {
+    public UIAKeyboard keyboard() {
         return UIAApplication.super.getKeyboard(instruments);
     }
 
@@ -651,11 +627,11 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
 //    @Override
-//    public String version() throws UIAException {
+//    public String version() {
 //        String js = "UIALogger.logMessage(app.version());";
 //        return Instruments.getLogMessage(instruments.runJavaScript(js));
 //    }
-    private Dimension loadDisplaySize() throws UIAException {
+    private Dimension loadDisplaySize() {
         List<String> lines = this.instruments.runJavaScript("window.logElement();");
         Dimension dimension = new Dimension();
         String line = lines.stream().filter((l) -> (l.startsWith("UIAWindow"))).findFirst().get();
