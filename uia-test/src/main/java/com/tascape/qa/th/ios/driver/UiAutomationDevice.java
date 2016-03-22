@@ -328,19 +328,12 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      */
     @Override
     public UIAWindow mainWindow() {
-        long start = System.currentTimeMillis();
-        List<String> lines = loadElementTree();
         try {
-            File f = this.saveIntoFile("window-element-tree", "txt", "");
-            FileUtils.writeLines(f, lines);
-        } catch (IOException ex) {
+            return mw();
+        } catch (UIAException ex) {
             LOG.warn(ex.getMessage());
         }
-        UIAWindow window = UIA.parseElementTree(lines);
-        window.setInstruments(instruments);
-        this.currentWindow = window;
-        LOG.trace("time {} ms", System.currentTimeMillis() - start);
-        return window;
+        return mw();
     }
 
     @Override
@@ -656,6 +649,22 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
             dimension.setSize(Integer.parseInt(ds[2].trim()), Integer.parseInt(ds[3].trim()));
         }
         return dimension;
+    }
+
+    private UIAWindow mw() {
+        long start = System.currentTimeMillis();
+        List<String> lines = loadElementTree();
+        try {
+            File f = this.saveIntoFile("window-element-tree", "txt", "");
+            FileUtils.writeLines(f, lines);
+        } catch (IOException ex) {
+            LOG.warn(ex.getMessage());
+        }
+        UIAWindow window = UIA.parseElementTree(lines);
+        window.setInstruments(instruments);
+        this.currentWindow = window;
+        LOG.trace("time {} ms", System.currentTimeMillis() - start);
+        return window;
     }
 
     public static void main(String[] args) throws SDKException {
