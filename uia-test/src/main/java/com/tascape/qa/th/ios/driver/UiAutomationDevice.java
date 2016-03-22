@@ -478,30 +478,30 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     public void flickHalfScreenUp() {
         Dimension dimension = this.getDisplaySize();
         this.flickFromTo(new Point2D.Float(dimension.width / 2, dimension.height / 2),
-            new Point2D.Float(dimension.width / 2, 0), 1);
+            new Point2D.Float(dimension.width / 2, 0));
     }
 
     public void flickHalfScreenDown() {
         Dimension dimension = this.getDisplaySize();
         this.flickFromTo(new Point2D.Float(dimension.width / 2, dimension.height / 2),
-            new Point2D.Float(dimension.width / 2, dimension.height), 1);
+            new Point2D.Float(dimension.width / 2, dimension.height));
     }
 
     @Override
-    public void flickFromTo(Point2D.Float from, Point2D.Float to, int duration) {
+    public void flickFromTo(Point2D.Float from, Point2D.Float to) {
         this.instruments.runJavaScript(
-            "target.flickFromTo(" + toCGString(from) + ", " + toCGString(to) + ", " + duration + ");");
+            "target.flickFromTo(" + toCGString(from) + ", " + toCGString(to) + ");");
     }
 
     @Override
-    public void flickFromTo(UIAElement fromElement, UIAElement toElement, int duration) {
-        this.flickFromTo(fromElement.toJavaScript(), toElement.toJavaScript(), duration);
+    public void flickFromTo(UIAElement fromElement, UIAElement toElement) {
+        this.flickFromTo(fromElement.toJavaScript(), toElement.toJavaScript());
     }
 
     @Override
-    public void flickFromTo(String fromJavaScript, String toJavaScript, int duration) {
+    public void flickFromTo(String fromJavaScript, String toJavaScript) {
         this.instruments.runJavaScript("var e1 = " + fromJavaScript + "; var e2 = " + toJavaScript + "; "
-            + "target.flickFromTo(e1, e2, " + duration + ");");
+            + "target.flickFromTo(e1, e2);");
     }
 
     @Override

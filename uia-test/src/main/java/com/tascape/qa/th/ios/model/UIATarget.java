@@ -80,11 +80,11 @@ public interface UIATarget {
 
     void doubleTap(String javaScript) throws UIAException;
 
-    void flickFromTo(Point2D.Float from, Point2D.Float to, int duration) throws UIAException;
+    void flickFromTo(Point2D.Float from, Point2D.Float to) throws UIAException;
 
-    void flickFromTo(UIAElement fromElement, UIAElement toElement, int duration) throws UIAException;
+    void flickFromTo(UIAElement fromElement, UIAElement toElement) throws UIAException;
 
-    void flickFromTo(String fromJavaScript, String toJavaScript, int duration) throws UIAException;
+    void flickFromTo(String fromJavaScript, String toJavaScript) throws UIAException;
 
     void pinchCloseFromToForDuration(Point2D.Float from, Point2D.Float to, int duration) throws UIAException;
 
