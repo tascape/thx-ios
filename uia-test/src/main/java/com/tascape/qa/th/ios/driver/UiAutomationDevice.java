@@ -195,8 +195,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      *
      * @return true if element identified by javascript exists
      */
-    public <T extends UIAElement> boolean doesElementExist(String javaScript, Class<T> type, String name) throws
-        UIAException {
+    public <T extends UIAElement> boolean doesElementExist(String javaScript, Class<T> type, String name) {
         String js = "var e = " + javaScript + "; e.logElement();";
         return instruments.runJavaScript(js).stream()
             .filter(line -> line.contains(type.getSimpleName()))

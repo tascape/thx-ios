@@ -140,7 +140,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     public void disconnect() {
         responseQueue.clear();
         if (instrumentsDog != null) {
-            LOG.debug("Stop instruments on {}", uuid);
+            LOG.trace("Stop instruments on {}", uuid);
             instrumentsStreamHandler.deleteObservers();
             instrumentsDog.stop();
             instrumentsDog.killedProcess();
@@ -148,12 +148,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     }
 
     public void shutdown() {
-        if (instrumentsDog != null) {
-            LOG.debug("Stop instruments on {}", uuid);
-            instrumentsStreamHandler.deleteObservers();
-            instrumentsDog.stop();
-            instrumentsDog.killedProcess();
-        }
+        this.disconnect();
         if (ngServer != null) {
             ngServer.shutdown(false);
         }
@@ -162,7 +157,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         }
     }
 
-    public List<String> runJavaScript(String javaScript) throws UIAException {
+    public List<String> runJavaScript(String javaScript) {
         return this.runJavaScript(javaScript, true);
     }
 

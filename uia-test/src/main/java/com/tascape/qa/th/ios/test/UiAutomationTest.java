@@ -77,8 +77,7 @@ public interface UiAutomationTest {
      * @param device         the UiAutomationDevice instance used in test case
      * @param timeoutMinutes timeout in minutes to fail the manual steps
      *
-     * @throws InterruptedException if case if being interrupted
-     * @throws UIAException         in case of device communication issue
+     * @throws Exception if case of error
      */
     default void testManually(UiAutomationDevice device, int timeoutMinutes) throws Exception {
         final Logger LOG = LoggerFactory.getLogger(UiAutomationTest.class);
