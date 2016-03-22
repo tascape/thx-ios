@@ -304,6 +304,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     @Override
     public File takeDeviceScreenshot() throws EntityDriverException {
+        long start = System.currentTimeMillis();
         try {
             LOG.debug("Take screenshot");
             File png = this.saveIntoFile("ss", "png", "");
@@ -313,6 +314,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
                 .filter(p -> p.getName().contains(name)).findFirst().get();
             LOG.trace("{}", f);
             FileUtils.copyFile(f, png);
+            LOG.trace("time {} ms", System.currentTimeMillis() - start);
             return png;
         } catch (IOException ex) {
             throw new EntityDriverException(ex);
@@ -326,6 +328,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      */
     @Override
     public UIAWindow mainWindow() {
+        long start = System.currentTimeMillis();
         List<String> lines = loadElementTree();
         try {
             File f = this.saveIntoFile("window-element-tree", "txt", "");
@@ -336,6 +339,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         UIAWindow window = UIA.parseElementTree(lines);
         window.setInstruments(instruments);
         this.currentWindow = window;
+        LOG.trace("time {} ms", System.currentTimeMillis() - start);
         return window;
     }
 
@@ -469,6 +473,18 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     @Override
     public void doubleTap(String javaScript) {
         this.instruments.runJavaScript("var e = " + javaScript + "; e.doubleTap();");
+    }
+
+    public void flickHalfScreenUp() {
+        Dimension dimension = this.getDisplaySize();
+        this.flickFromTo(new Point2D.Float(dimension.width / 2, dimension.height / 2),
+            new Point2D.Float(dimension.width / 2, 0), 1);
+    }
+
+    public void flickHalfScreenDown() {
+        Dimension dimension = this.getDisplaySize();
+        this.flickFromTo(new Point2D.Float(dimension.width / 2, dimension.height / 2),
+            new Point2D.Float(dimension.width / 2, dimension.height), 1);
     }
 
     @Override

@@ -202,7 +202,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
                 throw new UIAException("Interrupted", ex);
             }
             if (res == null) {
-                throw new UIAException("no response from device");
+                break;
             }
             if (res.contains(reqId + " start")) {
                 LOG.trace(res);
