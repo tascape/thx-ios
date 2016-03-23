@@ -22,17 +22,20 @@ import java.util.concurrent.TimeUnit;
 import org.libimobiledevice.ios.driver.binding.exceptions.SDKException;
 
 /**
- * This test suite supports plug-n-play for multiple devices.
+ * This test suite supports plug-n-play for multiple DEVICES.
  *
  * @author linsong wang
  */
 public interface UiAutomationTestSuite {
 
-    BlockingQueue<String> UUIDS
-        = new ArrayBlockingQueue<>(UiAutomationDevice.getAllUuids().size(), true, UiAutomationDevice.getAllUuids());
+    BlockingQueue<UiAutomationDevice> DEVICES
+        = new ArrayBlockingQueue<>(UiAutomationDevice.getAllDevices().size(), true, UiAutomationDevice.getAllDevices());
 
     default UiAutomationDevice getAvailableDevice() throws SDKException, InterruptedException {
-        String uuid = UUIDS.poll(10, TimeUnit.SECONDS);
-        return new UiAutomationDevice(uuid);
+        return DEVICES.poll(10, TimeUnit.SECONDS);
+    }
+
+    default int getNumberOfDevices() {
+        return DEVICES.size();
     }
 }

@@ -145,8 +145,8 @@ class LibIMobileDevice extends EntityDriver {
         this.uuid = uuid;
 
         this.iosDevice = DeviceService.get(uuid);
-        this.appContainerService = new AppContainerService(iosDevice);
         this.debugService = new DebugService(iosDevice);
+        this.appContainerService = new AppContainerService(iosDevice);
         this.imageMountingService = new ImageMountingService(iosDevice);
         this.informationService = new InformationService(iosDevice);
         this.installerService = new InstallerService(iosDevice);

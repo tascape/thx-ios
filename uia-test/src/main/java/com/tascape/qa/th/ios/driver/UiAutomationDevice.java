@@ -37,6 +37,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.apache.commons.io.FileUtils;
@@ -48,6 +49,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, UIAApplication {
     private static final Logger LOG = LoggerFactory.getLogger(UiAutomationDevice.class);
+
+    private static final List<UiAutomationDevice> DEVICES = new ArrayList<>();
 
     public static final String SYSPROP_TIMEOUT_SECOND = "qa.th.driver.ios.TIMEOUT_SECOND";
 
@@ -64,6 +67,23 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     private UIAWindow currentWindow;
 
     private String alertHandler = "";
+
+    public static synchronized List<UiAutomationDevice> getAllDevices() {
+        List<String> UUIDS = LibIMobileDevice.getAllUuids();
+        if (DEVICES.isEmpty()) {
+            for (String uuid : UUIDS) {
+                try {
+                    DEVICES.add(new UiAutomationDevice(uuid));
+                } catch (SDKException ex) {
+                    LOG.warn("Cannnot debug device {}", uuid, ex);
+                }
+            }
+            if (DEVICES.isEmpty()) {
+                throw new UIAException("Cannot debug any attached device");
+            }
+        }
+        return DEVICES;
+    }
 
     public UiAutomationDevice() throws SDKException {
         this(LibIMobileDevice.getAllUuids().get(0));
