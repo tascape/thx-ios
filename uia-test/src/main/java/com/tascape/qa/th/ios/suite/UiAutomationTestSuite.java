@@ -33,10 +33,6 @@ public interface UiAutomationTestSuite {
 
     default UiAutomationDevice getAvailableDevice() throws SDKException, InterruptedException {
         String uuid = UUIDS.poll(10, TimeUnit.SECONDS);
-        try {
-            return new UiAutomationDevice(uuid);
-        } finally {
-            UUIDS.offer(uuid);
-        }
+        return new UiAutomationDevice(uuid);
     }
 }
