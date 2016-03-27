@@ -69,8 +69,8 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     private String alertHandler = "";
 
     public static synchronized List<UiAutomationDevice> getAllDevices() {
-        List<String> UUIDS = LibIMobileDevice.getAllUuids();
         if (DEVICES.isEmpty()) {
+            List<String> UUIDS = LibIMobileDevice.getAllUuids();
             for (String uuid : UUIDS) {
                 try {
                     DEVICES.add(new UiAutomationDevice(uuid));
