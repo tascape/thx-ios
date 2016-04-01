@@ -172,7 +172,7 @@ class LibIMobileDevice extends EntityDriver {
     @Override
     public String getName() {
         try {
-            return informationService.getDeviceName() + "-" + informationService.getDeviceType();
+            return informationService.getDeviceName();
         } catch (SDKException ex) {
             LOG.warn(ex.getMessage());
             return LibIMobileDevice.class.getSimpleName();
@@ -192,6 +192,19 @@ class LibIMobileDevice extends EntityDriver {
     @Override
     public void reset() throws Exception {
         LOG.debug("NA");
+    }
+
+    public String getType() {
+        try {
+            return informationService.getDeviceType();
+        } catch (SDKException ex) {
+            LOG.warn(ex.getMessage());
+            return "na";
+        }
+    }
+    
+    public String getProductDetail() {
+        return getType() + " "  + getVersion() + " " + getName();
     }
 
     public int launchApp(String bundleId) throws SDKException {
