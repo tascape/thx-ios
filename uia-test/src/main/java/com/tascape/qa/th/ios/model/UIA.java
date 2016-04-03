@@ -33,34 +33,40 @@ import org.slf4j.LoggerFactory;
 public class UIA {
     private static final Logger LOG = LoggerFactory.getLogger(UIA.class);
 
-    private static final Pattern PATTERN_UIA = Pattern.compile("(UIA.+?) \"(.+?)\" (\\{\\{.+?\\}, \\{.+?\\}\\})");
+    private static final Pattern PATTERN_UIA = Pattern.compile("(UIA.+?) \"(.+?)\" (\\{\\{.+?\\}, \\{.+?\\}\\})",
+        Pattern.DOTALL | Pattern.MULTILINE);
 
-    private static final String UIA = "UIA";
+    private static final String UIA_CLASS = "UIA";
 
     private static final String ELEMENTS = "elements: {";
 
-    public static UIAWindow parseElementTree(List<String> elementTree) throws UIAException {
-        List<String> lines = elementTree.stream()
-            .filter(l -> l.contains(UIA) || l.contains(ELEMENTS) || l.endsWith("}")).collect(Collectors.toList());
+    public static UIA newInstance() {
+        return new UIA();
+    }
+
+    public UIAWindow parseElementTree(List<String> elementTree) throws UIAException {
+        while (!elementTree.get(0).startsWith(UIAWindow.class.getSimpleName())) {
+            elementTree.remove(0);
+        }
         UIAWindow window = null;
-        while (lines.size() > 0) {
-            String line = lines.remove(0);
+        while (elementTree.size() > 0) {
+            String line = elementTree.remove(0);
             if (line.startsWith("UIAWindow")) {
-                window = (UIAWindow) parseElement(line);
+                window = (UIAWindow) parseUIAElement(line);
                 break;
             }
         }
         if (window == null) {
             throw new UIAException("Cannot parse element tree, no UIAWindow found");
         }
-        if (!lines.isEmpty()) {
-            parseElements(window, lines.subList(0, lines.size() - 1));
+        if (!elementTree.isEmpty()) {
+            parseElements(window, elementTree.subList(0, elementTree.size()));
         }
         return window;
     }
 
-    public static UIAElement parseElement(String line) throws UIAException {
-        Matcher m = PATTERN_UIA.matcher(line);
+    public UIAElement parseUIAElement(String uiaLine) throws UIAException {
+        Matcher m = PATTERN_UIA.matcher(uiaLine);
         if (m.matches()) {
             UIAElement e = newElement(m.group(1));
             e.setName(m.group(2));
@@ -69,28 +75,47 @@ public class UIA {
                 Float.parseFloat(r[2]), Float.parseFloat(r[3])));
             return e;
         }
-        throw new UIAException("Cannot parse " + line);
+        throw new UIAException("Cannot parse " + uiaLine);
     }
 
-    private static void parseElements(UIAElement root, List<String> elementTree) throws UIAException {
+    private void clean(List<String> elementTree) {
+        while (!elementTree.get(0).startsWith(UIAWindow.class.getSimpleName())) {
+            elementTree.remove(0);
+        }
+    }
+
+    private void parseElements(UIAElement root, List<String> elementTree) throws UIAException {
         List<String> lines = elementTree.stream().map(l -> StringUtils.replace(l, "\t", "", 1))
             .collect(Collectors.toList());
         UIAElement element = null;
-        List<String> ls = new ArrayList<>();
+        List<String> childLines = new ArrayList<>();
+        String uiaLine = "";
         while (lines.size() > 0) {
             String line = lines.remove(0);
-            if (line.startsWith(UIA)) {
-                element = parseElement(line);
-                root.addElement(element);
+
+            if (line.startsWith(UIA_CLASS)) {
+                uiaLine = line;
 
             } else if (line.startsWith(ELEMENTS)) {
-                ls = new ArrayList<>();
+                childLines = new ArrayList<>();
 
             } else if (line.startsWith("\t")) {
-                ls.add(line);
+                childLines.add(line);
 
             } else if (line.startsWith("}")) {
-                parseElements(element, ls);
+                parseElements(element, childLines);
+                childLines = new ArrayList<>();
+
+            } else if (!childLines.isEmpty()) {
+                childLines.add(line);
+            } else if (StringUtils.isNotEmpty(uiaLine)) {
+                uiaLine += "\n" + line;
+            }
+
+            if (uiaLine.endsWith("}}")) {
+                element = parseUIAElement(uiaLine);
+                uiaLine = "";
+                root.addElement(element);
             }
         }
     }
@@ -158,22 +183,31 @@ public class UIA {
     }
 
     public static void main(String[] args) throws Exception {
-        List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree.txt"));
-        UIAWindow w = parseElementTree(elementTree);
-        LOG.debug("element tree\n{}", w);
-        LOG.debug("json\n{}", w.toJson().toString(2));
-
-        try {
-            UIAElement element = w.findElement(UIAStaticText.class, "Recipes");
-            LOG.debug("{}", element.toJavaScript());
-            LOG.debug("{}", element.toJson().toString(2));
-            LOG.debug("{}", element.toString());
-        } catch (Exception ex) {
-            LOG.error("", ex);
+        UIA uia = UIA.newInstance();
+//        {
+//            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree.txt"));
+//            UIAWindow w = uia.parseElementTree(elementTree);
+//            LOG.debug("element tree\n{}", w);
+//            LOG.debug("json\n{}", w.toJson().toString(2));
+//
+//            try {
+//                UIAElement element = w.findElement(UIAStaticText.class, "Recipes");
+//                LOG.debug("{}", element.toJavaScript());
+//                LOG.debug("{}", element.toJson().toString(2));
+//                LOG.debug("{}", element.toString());
+//            } catch (Exception ex) {
+//                LOG.error("", ex);
+//            }
+//        }
+//        {
+//            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree-0.txt"));
+//            UIAWindow w = uia.parseElementTree(elementTree);
+//            LOG.debug(w.toJson().toString(2));
+//        }
+        {
+            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree-1.txt"));
+            UIAWindow w = uia.parseElementTree(elementTree);
+            LOG.debug(w.toJson().toString(2));
         }
-
-        elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree-0.txt"));
-        w = parseElementTree(elementTree);
-        LOG.debug(w.toJson().toString(2));
     }
 }

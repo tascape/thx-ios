@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.tascape.qa.th.SystemConfiguration;
 import com.tascape.qa.th.Utils;
-import com.tascape.qa.th.exception.EntityDriverException;
 import com.tascape.qa.th.ios.comm.Instruments;
 import com.tascape.qa.th.ios.model.DeviceOrientation;
 import com.tascape.qa.th.ios.model.UIAAlert;
@@ -309,7 +308,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         String js = "var e = " + javaScript + "; e.logElement();";
         String line = instruments.runJavaScript(js).stream()
             .filter(l -> l.contains(type.getSimpleName())).findFirst().get();
-        return UIA.parseElement(line).name();
+        return UIA.newInstance().parseUIAElement(line).name();
     }
 
     public <T extends UIAElement> String getElementValue(String javaScript, Class<T> type) {
@@ -323,7 +322,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     @Override
-    public File takeDeviceScreenshot() throws EntityDriverException {
+    public File takeDeviceScreenshot() {
         long start = System.currentTimeMillis();
         try {
             LOG.debug("Take screenshot");
@@ -337,7 +336,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
             LOG.trace("time {} ms", System.currentTimeMillis() - start);
             return png;
         } catch (IOException ex) {
-            throw new EntityDriverException(ex);
+            throw new UIAException("Cannot take screenshot", ex);
         }
     }
 
@@ -680,7 +679,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         } catch (IOException ex) {
             LOG.warn(ex.getMessage());
         }
-        UIAWindow window = UIA.parseElementTree(lines);
+        UIAWindow window = UIA.newInstance().parseElementTree(lines);
         window.setInstruments(instruments);
         this.currentWindow = window;
         LOG.trace("time {} ms", System.currentTimeMillis() - start);

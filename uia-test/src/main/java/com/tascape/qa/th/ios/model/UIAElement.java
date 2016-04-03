@@ -53,7 +53,7 @@ public class UIAElement {
         return name;
     }
 
-    public Point2D.Float hitpoint() throws UIAException {
+    public Point2D.Float hitpoint() {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
@@ -181,6 +181,11 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIATextView[0]);
     }
 
+    /**
+     * Not implemented yet.
+     *
+     * @return null
+     */
     public UIAElement toolbar() {
         throw new UnsupportedOperationException("Not implemented yet");
     }
@@ -195,23 +200,23 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIAWebView[0]);
     }
 
-    public void doubleTap() throws UIAException {
+    public void doubleTap() {
         instruments.runJavaScript(toJavaScript() + ".doubleTap();");
     }
 
-    public void scrollToVisible() throws UIAException {
+    public void scrollToVisible() {
         instruments.runJavaScript(toJavaScript() + ".scrollToVisible();");
     }
 
-    public void touchAndHold(int duration) throws UIAException {
+    public void touchAndHold(int duration) {
         instruments.runJavaScript(toJavaScript() + ".touchAndHold(" + duration + ");");
     }
 
-    public void twoFingerTap() throws UIAException {
+    public void twoFingerTap() {
         instruments.runJavaScript(toJavaScript() + ".twoFingerTap();");
     }
 
-    public boolean checkIsValid() throws UIAException {
+    public boolean checkIsValid() {
         String v = Instruments.getLogMessage(instruments.runJavaScript("var e = " + toJavaScript()
             + "; UIALogger.logMessage(e.checkIsValid() + '');"));
         if (null != v) {
@@ -225,7 +230,7 @@ public class UIAElement {
         throw new UIAException("Unknown status of " + v);
     }
 
-    public int hasKeyboardFocus() throws UIAException {
+    public int hasKeyboardFocus() {
         String v = Instruments.getLogMessage(instruments.runJavaScript("var e = " + toJavaScript()
             + "; UIALogger.logMessage(e.hasKeyboardFocus() + '');"));
         if (null != v) {
@@ -239,7 +244,7 @@ public class UIAElement {
         throw new UIAException("Unknown status of " + v);
     }
 
-    public int isEnabled() throws UIAException {
+    public int isEnabled() {
         String v = Instruments.getLogMessage(instruments.runJavaScript("var e = " + toJavaScript()
             + "; UIALogger.logMessage(e.isEnabled() + '');"));
         if (null != v) {
@@ -253,7 +258,7 @@ public class UIAElement {
         throw new UIAException("Unknown status of " + v);
     }
 
-    public boolean isValid() throws UIAException {
+    public boolean isValid() {
         String v = Instruments.getLogMessage(instruments.runJavaScript("var e = " + toJavaScript()
             + "; UIALogger.logMessage(e.isValid() + '');"));
         if (null != v) {
@@ -267,7 +272,7 @@ public class UIAElement {
         throw new UIAException("Unknown status of " + v);
     }
 
-    public int isVisible() throws UIAException {
+    public int isVisible() {
         String v = Instruments.getLogMessage(instruments.runJavaScript("var e = " + toJavaScript()
             + "; UIALogger.logMessage(e.isVisible() + '');"));
         if (null != v) {
@@ -281,7 +286,7 @@ public class UIAElement {
         throw new UIAException("Unknown status of " + v);
     }
 
-    public boolean waitForInvalid() throws UIAException {
+    public boolean waitForInvalid() {
         String v = Instruments.getLogMessage(instruments.runJavaScript("var e = " + toJavaScript()
             + "; UIALogger.logMessage(e.waitForInvalid() + '');"));
         if (null != v) {
@@ -295,12 +300,12 @@ public class UIAElement {
         throw new UIAException("Unknown status of " + v);
     }
 
-    public String label() throws UIAException {
+    public String label() {
         String js = "var e = " + toJavaScript() + "; UIALogger.logMessage(e.label());";
         return Instruments.getLogMessage(instruments.runJavaScript(js));
     }
 
-    public String value() throws UIAException {
+    public String value() {
         String js = "var e = " + toJavaScript() + "; UIALogger.logMessage(e.value());";
         return Instruments.getLogMessage(instruments.runJavaScript(js));
     }
@@ -309,7 +314,7 @@ public class UIAElement {
         return elements.stream().filter(e -> name.equals(e.name())).findFirst().orElse((UIAElement) null);
     }
 
-    public void tap() throws UIAException {
+    public void tap() {
         instruments.runJavaScript(toJavaScript() + ".tap()");
     }
 
@@ -318,15 +323,15 @@ public class UIAElement {
      *
      * @throws UIAException in case of Instruments error
      */
-    public void tapOn() throws UIAException {
+    public void tapOn() {
         instruments.runJavaScript("target.tap({x:" + center.x + ", y:" + center.y + "})");
     }
 
-    public void drag(float x, float y) throws UIAException {
+    public void drag(float x, float y) {
         this.drag(x, y, 1);
     }
 
-    public void drag(float x, float y, int duration) throws UIAException {
+    public void drag(float x, float y, int duration) {
         Point2D.Float end = new Point2D.Float(center.x + x, center.y + y);
         instruments.runJavaScript("target.dragFromToForDuration(" + toCGString(center) + ", " + toCGString(end)
             + ", " + duration + ");");
