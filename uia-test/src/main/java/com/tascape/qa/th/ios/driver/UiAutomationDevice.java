@@ -304,6 +304,32 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         return null;
     }
 
+    /**
+     * Waits for an element disappear on current UI, based on element type and name. This method loads full element
+     * tree.
+     *
+     * @param <T>  sub-class of UIAElement
+     * @param type type of uia element, such as UIATabBar
+     * @param name name of an element, such as "MainTabBar"
+     *
+     * @throws java.lang.InterruptedException in case of interruption
+     */
+    public <T extends UIAElement> void waitForNoElement(Class<T> type, String name) throws InterruptedException {
+        long end = System.currentTimeMillis() + TIMEOUT_SECOND * 1000;
+        while (System.currentTimeMillis() < end) {
+            try {
+                T element = mainWindow().findElement(type, name);
+                if (element == null) {
+                    return;
+                }
+            } catch (Exception ex) {
+                LOG.warn("{}", ex.getMessage());
+                Thread.sleep(10000);
+            }
+            Utils.sleep(5000, "wait for no " + type.getSimpleName() + "[" + name + "]");
+        }
+    }
+
     public <T extends UIAElement> String getElementName(String javaScript, Class<T> type) {
         String js = "var e = " + javaScript + "; e.logElement();";
         String line = instruments.runJavaScript(js).stream()
