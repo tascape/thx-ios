@@ -46,6 +46,21 @@ public class UIAWindow extends UIAElement {
         return type.cast(super.findElement(type, name));
     }
 
+    /**
+     * Finds UI element recursively.
+     *
+     * @param <T>         type of element
+     * @param type        type of element
+     * @param partialName name of element
+     *
+     * @return element found, or null
+     */
+    @Override
+    public <T extends UIAElement> T findElementPartialName(Class<T> type, String partialName) {
+        LOG.debug("Look for {}['{}'] (partial name)", type.getSimpleName(), partialName);
+        return type.cast(super.findElementPartialName(type, partialName));
+    }
+
     public UIAButton findButton(String name) {
         return this.findElement(UIAButton.class, name);
     }

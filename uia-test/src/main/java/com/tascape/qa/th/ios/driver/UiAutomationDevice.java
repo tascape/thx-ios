@@ -642,7 +642,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     /**
-     * Unsupported yet.
+     * Not supported yet.
      *
      * @param alert alert object
      *
@@ -654,11 +654,12 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     public void setAlertAutoDismiss() {
-        this.alertHandler = "UIATarget.onAlert = function onAlert(alert) {return false;}";
+        this.alertHandler
+            = "UIATarget.onAlert = function onAlert(alert) {UIALogger.logMessage(alert.name()); return false;}";
     }
 
-    public void logElementTree() {
-        instruments.runJavaScript("window.logElementTree();");
+    public List<String> logElementTree() {
+        return instruments.runJavaScript("window.logElementTree();");
     }
 
     public Instruments getInstruments() {

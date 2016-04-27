@@ -66,13 +66,25 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIAButton[0]);
     }
 
+    public UIAButton button(int index) {
+        return buttons()[index];
+    }
+
     public UIACollectionView[] collectionViews() {
         return elements.stream().filter(e -> e instanceof UIACollectionView).map(e -> (UIACollectionView) e)
             .collect(Collectors.toList()).toArray(new UIACollectionView[0]);
     }
 
+    public UIACollectionView collectionView(int index) {
+        return collectionViews()[index];
+    }
+
     public UIAElement[] elements() {
         return elements.toArray(new UIAElement[0]);
+    }
+
+    public UIAElement element(int index) {
+        return elements()[index];
     }
 
     public UIAImage[] images() {
@@ -80,11 +92,24 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIAImage[0]);
     }
 
+    public UIAImage image(int index) {
+        return images()[index];
+    }
+
     public UIALink[] links() {
         return elements.stream().filter(e -> e instanceof UIALink).map(e -> (UIALink) e)
             .collect(Collectors.toList()).toArray(new UIALink[0]);
     }
 
+    public UIALink link(int index) {
+        return links()[index];
+    }
+
+    /**
+     * Not implemented yet
+     *
+     * @return null
+     */
     public UIAElement navigationBar() {
         throw new UnsupportedOperationException("Not implemented yet");
     }
@@ -99,6 +124,10 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIAPageIndicator[0]);
     }
 
+    public UIAPageIndicator pageIndicator(int index) {
+        return pageIndicators()[index];
+    }
+
     public UIAElement parent() {
         return parent;
     }
@@ -108,6 +137,15 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIAPicker[0]);
     }
 
+    public UIAPicker picker(int index) {
+        return pickers()[index];
+    }
+
+    /**
+     * Not implemented yet.
+     *
+     * @return null
+     */
     public UIAPopover popover() {
         throw new UnsupportedOperationException("Not implemented yet");
     }
@@ -117,9 +155,17 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIAProgressIndicator[0]);
     }
 
+    public UIAProgressIndicator progressIndicator(int index) {
+        return progressIndicators()[index];
+    }
+
     public UIAScrollView[] scrollViews() {
         return elements.stream().filter(e -> e instanceof UIAScrollView).map(e -> (UIAScrollView) e)
             .collect(Collectors.toList()).toArray(new UIAScrollView[0]);
+    }
+
+    public UIAScrollView scrollView(int index) {
+        return scrollViews()[index];
     }
 
     public UIASearchBar[] searchBars() {
@@ -127,9 +173,17 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIASearchBar[0]);
     }
 
+    public UIASearchBar searchBar(int index) {
+        return searchBars()[index];
+    }
+
     public UIASecureTextField[] secureTextFields() {
         return elements.stream().filter(e -> e instanceof UIASecureTextField).map(e -> (UIASecureTextField) e)
             .collect(Collectors.toList()).toArray(new UIASecureTextField[0]);
+    }
+
+    public UIASecureTextField secureTextField(int index) {
+        return secureTextFields()[index];
     }
 
     public UIASegmentedControl[] segmentedControls() {
@@ -137,9 +191,17 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIASegmentedControl[0]);
     }
 
+    public UIASegmentedControl segmentedControl(int index) {
+        return segmentedControls()[index];
+    }
+
     public UIASlider[] sliders() {
         return elements.stream().filter(e -> e instanceof UIASlider).map(e -> (UIASlider) e)
             .collect(Collectors.toList()).toArray(new UIASlider[0]);
+    }
+
+    public UIASlider slider(int index) {
+        return sliders()[index];
     }
 
     public UIAStaticText[] staticTexts() {
@@ -147,11 +209,24 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIAStaticText[0]);
     }
 
+    public UIAStaticText staticText(int index) {
+        return staticTexts()[index];
+    }
+
     public UIASwitch[] switches() {
         return elements.stream().filter(e -> e instanceof UIASwitch).map(e -> (UIASwitch) e)
             .collect(Collectors.toList()).toArray(new UIASwitch[0]);
     }
 
+    public UIASwitch switches(int index) {
+        return switches()[index];
+    }
+
+    /**
+     * Not implemented yet
+     *
+     * @return null
+     */
     public UIAElement tabBar() {
         throw new UnsupportedOperationException("Not implemented yet");
     }
@@ -166,9 +241,17 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIATableView[0]);
     }
 
+    public UIATableView tableView(int index) {
+        return tableViews()[index];
+    }
+
     public UIATableCell[] cells() {
         return elements.stream().filter(e -> e instanceof UIATableCell).map(e -> (UIATableCell) e)
             .collect(Collectors.toList()).toArray(new UIATableCell[0]);
+    }
+
+    public UIATableCell cell(int index) {
+        return cells()[index];
     }
 
     public UIATextField[] textFields() {
@@ -176,9 +259,17 @@ public class UIAElement {
             .collect(Collectors.toList()).toArray(new UIATextField[0]);
     }
 
+    public UIATextField textField(int index) {
+        return textFields()[index];
+    }
+
     public UIATextView[] textViews() {
         return elements.stream().filter(e -> e instanceof UIATextView).map(e -> (UIATextView) e)
             .collect(Collectors.toList()).toArray(new UIATextView[0]);
+    }
+
+    public UIATextView textView(int index) {
+        return textViews()[index];
     }
 
     /**
@@ -198,6 +289,10 @@ public class UIAElement {
     public UIAWebView[] webViews() {
         return elements.stream().filter(e -> e instanceof UIAWebView).map(e -> (UIAWebView) e)
             .collect(Collectors.toList()).toArray(new UIAWebView[0]);
+    }
+
+    public UIAWebView webView(int index) {
+        return webViews()[index];
     }
 
     public void doubleTap() {
@@ -403,6 +498,19 @@ public class UIAElement {
         }
         for (UIAElement element : elements) {
             UIAElement e = element.findElement(type, name);
+            if (e != null) {
+                return type.cast(e);
+            }
+        }
+        return type.cast(null);
+    }
+
+    <T extends UIAElement> T findElementPartialName(Class<T> type, String partialName) {
+        if (type.equals(this.getClass()) && this.name().contains(partialName)) {
+            return type.cast(this);
+        }
+        for (UIAElement element : elements) {
+            UIAElement e = element.findElement(type, partialName);
             if (e != null) {
                 return type.cast(e);
             }

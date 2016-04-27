@@ -20,7 +20,7 @@ import com.alee.laf.progressbar.WebProgressBar;
 import com.alee.utils.swing.ComponentUpdater;
 import com.tascape.qa.th.ios.driver.UiAutomationDevice;
 import com.tascape.qa.th.ios.model.UIAException;
-import com.tascape.qa.th.ios.tools.SmartScroller;
+import com.tascape.qa.th.ui.SmartScroller;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;

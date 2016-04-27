@@ -18,6 +18,7 @@ package com.tascape.qa.th.ios.tools;
 import com.tascape.qa.th.SystemConfiguration;
 import com.tascape.qa.th.exception.EntityDriverException;
 import com.tascape.qa.th.ios.driver.UiAutomationDevice;
+import com.tascape.qa.th.ui.SmartScroller;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -51,8 +52,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author linsong wang
  */
-public class JavaScriptDebugger extends WindowAdapter implements ActionListener, Observer {
-    private static final Logger LOG = LoggerFactory.getLogger(JavaScriptDebugger.class);
+public class UiAutomationDebugger extends WindowAdapter implements ActionListener, Observer {
+    private static final Logger LOG = LoggerFactory.getLogger(UiAutomationDebugger.class);
 
     private UiAutomationDevice device;
 
@@ -76,7 +77,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
 
     private String appName = "";
 
-    public JavaScriptDebugger(String app) {
+    public UiAutomationDebugger(String app) {
         this.appName = app;
         this.initUi();
     }
@@ -238,7 +239,7 @@ public class JavaScriptDebugger extends WindowAdapter implements ActionListener,
     public static void main(String[] args) throws Exception {
         SystemConfiguration.getInstance();
         String app = args.length > 0 ? args[0] : "App Name";
-        JavaScriptDebugger debugger = new JavaScriptDebugger(app);
+        UiAutomationDebugger debugger = new UiAutomationDebugger(app);
         JFrame jf = new JFrame("iOS UIAutomation JavaScript Debugger");
         jf.setContentPane(debugger.getJPanel());
         jf.pack();

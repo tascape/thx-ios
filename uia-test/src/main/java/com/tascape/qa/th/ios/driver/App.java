@@ -51,6 +51,7 @@ public abstract class App extends EntityDriver {
     }
 
     public void launch() throws Exception {
+        device.setAlertAutoDismiss();
         device.start(this.getName(), getLaunchRetries(), getLaunchDelayMillis());
     }
 
