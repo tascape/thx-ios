@@ -413,6 +413,11 @@ public class UIAElement {
         instruments.runJavaScript(toJavaScript() + ".tap()");
     }
 
+    public void tap(int times) {
+        String js = toJavaScript() + ".tap();";
+        instruments.runJavaScript(StringUtils.repeat(js, times));
+    }
+
     /**
      * Taps on screen at element's center coordinates.
      *

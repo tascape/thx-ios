@@ -655,7 +655,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     public void setAlertAutoDismiss() {
         this.alertHandler
-            = "UIATarget.onAlert = function onAlert(alert) {UIALogger.logMessage(alert.name()); return false;}";
+            = "UIATarget.onAlert = function onAlert(alert) {UIALogger.logWarning(alert.name()); return false;}";
     }
 
     public List<String> logElementTree() {
