@@ -122,6 +122,12 @@ public class UIA {
 
     private static UIAElement newElement(String uia) {
         switch (uia) {
+            case "UIAActionSheet":
+                return new UIAActionSheet();
+            case "UIAActivityIndicator":
+                return new UIAActivityIndicator();
+            case "UIAActivityView":
+                return new UIAActivityView();
             case "UIAAlert":
                 return new UIAAlert();
             case "UIAButton":
@@ -130,10 +136,16 @@ public class UIA {
                 return new UIACollectionCell();
             case "UIACollectionView":
                 return new UIACollectionView();
+            case "UIAEditingMenu":
+                return new UIAEditingMenu();
             case "UIAElement":
                 return new UIAElement();
             case "UIAImage":
                 return new UIAImage();
+            case "UIAKey":
+                return new UIAKey();
+            case "UIAKeyboard":
+                return new UIAKeyboard();
             case "UIALink":
                 return new UIALink();
             case "UIANavigationBar":
@@ -146,10 +158,12 @@ public class UIA {
                 return new UIAPickerWheel();
             case "UIAPopover":
                 return new UIAPopover();
-            case "UIASearchBar":
-                return new UIASearchBar();
+            case "UIAProgressIndicator":
+                return new UIAProgressIndicator();
             case "UIAScrollView":
                 return new UIAScrollView();
+            case "UIASearchBar":
+                return new UIASearchBar();
             case "UIASecureTextField":
                 return new UIASecureTextField();
             case "UIASegmentedControl":
@@ -158,6 +172,8 @@ public class UIA {
                 return new UIASlider();
             case "UIAStaticText":
                 return new UIAStaticText();
+            case "UIAStatusBar":
+                return new UIAStatusBar();
             case "UIASwitch":
                 return new UIASwitch();
             case "UIATabBar":
@@ -168,10 +184,12 @@ public class UIA {
                 return new UIATableGroup();
             case "UIATableView":
                 return new UIATableView();
-            case "UIAToolbar":
-                return new UIAToolbar();
             case "UIATextField":
                 return new UIATextField();
+            case "UIATextView":
+                return new UIATextView();
+            case "UIAToolbar":
+                return new UIAToolbar();
             case "UIAWebView":
                 return new UIAWebView();
             case "UIAWindow":
@@ -184,26 +202,26 @@ public class UIA {
 
     public static void main(String[] args) throws Exception {
         UIA uia = UIA.newInstance();
-//        {
-//            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree.txt"));
-//            UIAWindow w = uia.parseElementTree(elementTree);
-//            LOG.debug("element tree\n{}", w);
-//            LOG.debug("json\n{}", w.toJson().toString(2));
-//
-//            try {
-//                UIAElement element = w.findElement(UIAStaticText.class, "Recipes");
-//                LOG.debug("{}", element.toJavaScript());
-//                LOG.debug("{}", element.toJson().toString(2));
-//                LOG.debug("{}", element.toString());
-//            } catch (Exception ex) {
-//                LOG.error("", ex);
-//            }
-//        }
-//        {
-//            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree-0.txt"));
-//            UIAWindow w = uia.parseElementTree(elementTree);
-//            LOG.debug(w.toJson().toString(2));
-//        }
+        {
+            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree.txt"));
+            UIAWindow w = uia.parseElementTree(elementTree);
+            LOG.debug("element tree\n{}", w);
+            LOG.debug("json\n{}", w.toJson().toString(2));
+
+            try {
+                UIAElement element = w.findElement(UIAStaticText.class, "Recipes");
+                LOG.debug("{}", element.toJavaScript());
+                LOG.debug("{}", element.toJson().toString(2));
+                LOG.debug("{}", element.toString());
+            } catch (Exception ex) {
+                LOG.error("", ex);
+            }
+        }
+        {
+            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree-0.txt"));
+            UIAWindow w = uia.parseElementTree(elementTree);
+            LOG.debug(w.toJson().toString(2));
+        }
         {
             List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree-1.txt"));
             UIAWindow w = uia.parseElementTree(elementTree);
