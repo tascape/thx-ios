@@ -42,6 +42,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -92,8 +93,9 @@ public interface UiAutomationTest {
         String tName = Thread.currentThread().getName() + "m";
         SwingUtilities.invokeLater(() -> {
             WebLookAndFeel.install();
-            JFrame jf = new JFrame("Manual Device UI Interaction");
-            jf.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            JDialog jf = new JDialog((JFrame) null, "Manual Device UI Interaction");
+            jf.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+
             JPanel jpContent = new JPanel(new BorderLayout());
             jf.setContentPane(jpContent);
             jpContent.setPreferredSize(new Dimension(1088, 828));
