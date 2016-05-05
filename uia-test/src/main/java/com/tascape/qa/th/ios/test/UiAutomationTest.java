@@ -143,7 +143,7 @@ public interface UiAutomationTest {
 
             JPanel jpScreen = new JPanel(new BorderLayout());
             JScrollPane jsp1 = new JScrollPane(jpScreen);
-//            jsp1.setPreferredSize(new Dimension(430, 600));
+            jsp1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             jpResponse.add(jsp1, BorderLayout.LINE_START);
 
             JPanel jpJs = new JPanel(new BorderLayout());
@@ -154,11 +154,11 @@ public interface UiAutomationTest {
             jSplitPane.setResizeWeight(0.8);
             jpContent.add(jSplitPane, BorderLayout.CENTER);
 
+            final JButton jbLogUi = new JButton("Log UI");
             JPanel jpLog = new JPanel();
             jpLog.setLayout(new BoxLayout(jpLog, BoxLayout.LINE_AXIS));
             jpResponse.add(jpLog, BorderLayout.PAGE_END);
             {
-                JButton jbLogUi = new JButton("Log UI");
                 jpLog.add(jbLogUi);
                 jbLogUi.addActionListener((ActionEvent event) -> {
                     Thread t = new Thread(tName) {
@@ -181,8 +181,9 @@ public interface UiAutomationTest {
                                 g2.dispose();
 
                                 JLabel jLabel = new JLabel(new ImageIcon(resizedImg));
+                                jLabel.setBorder(BorderFactory.createLineBorder(Color.red));
                                 jpScreen.removeAll();
-                                jpScreen.add(jLabel, BorderLayout.CENTER);
+                                jpScreen.add(jLabel, BorderLayout.LINE_START);
                                 jpScreen.validate();
 
                                 jLabel.addMouseListener(new MouseAdapter() {
@@ -297,6 +298,8 @@ public interface UiAutomationTest {
             jpb.setStringPainted(true);
             jpb.setString("");
             jpProgress.add(jpb);
+
+            jbLogUi.doClick();
 
             jf.pack();
             jf.setVisible(true);

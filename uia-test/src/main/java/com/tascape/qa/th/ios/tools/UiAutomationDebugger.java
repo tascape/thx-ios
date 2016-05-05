@@ -29,24 +29,33 @@ public class UiAutomationDebugger implements UiAutomationTest {
 
     private UiAutomationDevice device;
 
-    private String appName = "Moview";
+    private String appName = "Movies";
 
     private int debugMinutes = 30;
 
-    private UiAutomationDebugger() {
-        // todo: add ui for parameter input
-    }
-
     private void start() throws Exception {
+        // todo: add ui for parameter update
+
         device = new UiAutomationDevice();
         device.start(appName, 5000);
         this.testManually(device, debugMinutes);
     }
 
     public static void main(String[] args) {
+        String instruction = "Usage:\n"
+            + "java -cp $YOUR_CLASSPATH com.tascape.qa.th.ios.tools.UiAutomationDebugger APP_NAME DEBUG_TIME_IN_MINUTE";
+        LOG.info("--------\n{}", instruction);
+
         SystemConfiguration.getInstance();
 
         UiAutomationDebugger debugger = new UiAutomationDebugger();
+        if (args.length > 0) {
+            debugger.appName = args[0];
+        }
+        if (args.length > 1) {
+            debugger.debugMinutes = Integer.parseInt(args[1]);
+        }
+
         try {
             debugger.start();
         } catch (Throwable ex) {
