@@ -83,7 +83,7 @@ public interface UiAutomationTest {
     default void testManually(UiAutomationDevice device, int timeoutMinutes) throws Exception {
         final Logger LOG = LoggerFactory.getLogger(UiAutomationTest.class);
 
-        LOG.info("Start UI to test manually");
+        LOG.info("Start manual UI interaction");
         String info = device.model() + " " + device.name() + " " + device.systemName() + " " + device.systemVersion()
             + " " + device.getUuid();
         long end = System.currentTimeMillis() + timeoutMinutes * 60000L;
@@ -93,11 +93,11 @@ public interface UiAutomationTest {
         String tName = Thread.currentThread().getName() + "m";
         SwingUtilities.invokeLater(() -> {
             WebLookAndFeel.install();
-            JDialog jf = new JDialog((JFrame) null, "Manual Device UI Interaction");
-            jf.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+            JDialog jd = new JDialog((JFrame) null, "Manual Device UI Interaction");
+            jd.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
             JPanel jpContent = new JPanel(new BorderLayout());
-            jf.setContentPane(jpContent);
+            jd.setContentPane(jpContent);
             jpContent.setPreferredSize(new Dimension(1088, 828));
             jpContent.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
@@ -111,7 +111,7 @@ public interface UiAutomationTest {
                 jpInfo.add(jb, BorderLayout.LINE_START);
                 jb.addActionListener(event -> {
                     pass.set(true);
-                    jf.dispose();
+                    jd.dispose();
                     visible.set(false);
                 });
             }
@@ -123,7 +123,7 @@ public interface UiAutomationTest {
                 jpInfo.add(jb, BorderLayout.LINE_END);
                 jb.addActionListener(event -> {
                     pass.set(false);
-                    jf.dispose();
+                    jd.dispose();
                     visible.set(false);
                 });
             }
@@ -301,10 +301,10 @@ public interface UiAutomationTest {
 
             jbLogUi.doClick();
 
-            jf.pack();
-            jf.setVisible(true);
-            jf.setAlwaysOnTop(true);
-            jf.setLocationRelativeTo(null);
+            jd.pack();
+            jd.setVisible(true);
+            jd.setAlwaysOnTop(true);
+            jd.setLocationRelativeTo(null);
 
             ComponentUpdater.install(jpb, 1000, (ActionEvent e) -> {
                 int second = (int) (end - System.currentTimeMillis()) / 1000;
