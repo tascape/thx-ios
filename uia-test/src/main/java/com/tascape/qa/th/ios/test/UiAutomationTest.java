@@ -23,7 +23,6 @@ import com.tascape.qa.th.ios.model.UIAException;
 import com.tascape.qa.th.ui.SmartScroller;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -31,6 +30,8 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -42,6 +43,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -84,8 +86,6 @@ public interface UiAutomationTest {
         final Logger LOG = LoggerFactory.getLogger(UiAutomationTest.class);
 
         LOG.info("Start manual UI interaction");
-        String info = device.model() + " " + device.name() + " " + device.systemName() + " " + device.systemVersion()
-            + " " + device.getUuid();
         long end = System.currentTimeMillis() + timeoutMinutes * 60000L;
 
         AtomicBoolean visible = new AtomicBoolean(true);
@@ -128,7 +128,8 @@ public interface UiAutomationTest {
                 });
             }
 
-            jpInfo.add(new JLabel(info, SwingConstants.CENTER), BorderLayout.CENTER);
+            JLabel jlInfo = new JLabel(device.getProductDetail() + "" + device.getUuid(), SwingConstants.CENTER);
+            jpInfo.add(jlInfo, BorderLayout.CENTER);
 
             JPanel jpResponse = new JPanel(new BorderLayout());
             JPanel jpProgress = new JPanel(new BorderLayout());
@@ -141,7 +142,9 @@ public interface UiAutomationTest {
             new SmartScroller(jsp);
             jpResponse.add(jsp, BorderLayout.CENTER);
 
-            JPanel jpScreen = new JPanel(new BorderLayout());
+            JPanel jpScreen = new JPanel();
+            jpScreen.setMinimumSize(new Dimension(200, 200));
+            jpScreen.setLayout(new BoxLayout(jpScreen, BoxLayout.PAGE_AXIS));
             JScrollPane jsp1 = new JScrollPane(jpScreen);
             jsp1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             jpResponse.add(jsp1, BorderLayout.LINE_START);
@@ -154,9 +157,15 @@ public interface UiAutomationTest {
             jSplitPane.setResizeWeight(0.8);
             jpContent.add(jSplitPane, BorderLayout.CENTER);
 
-            final JButton jbLogUi = new JButton("Log UI");
             JPanel jpLog = new JPanel();
+            jpLog.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
             jpLog.setLayout(new BoxLayout(jpLog, BoxLayout.LINE_AXIS));
+
+            JCheckBox jcbTap = new JCheckBox("Enable Tap", null, false);
+            jpLog.add(jcbTap);
+            jpLog.add(Box.createHorizontalStrut(8));
+
+            JButton jbLogUi = new JButton("Log UI");
             jpResponse.add(jpLog, BorderLayout.PAGE_END);
             {
                 jpLog.add(jbLogUi);
@@ -166,7 +175,6 @@ public interface UiAutomationTest {
                         public void run() {
                             LOG.debug("\n\n");
                             try {
-                                jpContent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                                 File png = device.takeDeviceScreenshot();
                                 BufferedImage image = ImageIO.read(png);
 
@@ -181,17 +189,20 @@ public interface UiAutomationTest {
                                 g2.dispose();
 
                                 JLabel jLabel = new JLabel(new ImageIcon(resizedImg));
-                                jLabel.setBorder(BorderFactory.createLineBorder(Color.red));
                                 jpScreen.removeAll();
-                                jpScreen.add(jLabel, BorderLayout.LINE_START);
-                                jpScreen.validate();
+                                jpScreen.add(jLabel);
 
                                 jLabel.addMouseListener(new MouseAdapter() {
                                     @Override
                                     public void mouseClicked(MouseEvent e) {
                                         LOG.debug("clicked {}", e.getPoint());
+                                        if (jcbTap.isSelected()) {
+                                            device.tap(e.getPoint().x, e.getPoint().y);
+                                            jbLogUi.doClick();
+                                        }
                                     }
                                 });
+                                jtaResponse.setText("");
                                 device.mainWindow().logElement().forEach(line -> {
                                     LOG.debug(line);
                                     jtaResponse.append(line);
@@ -200,22 +211,18 @@ public interface UiAutomationTest {
                             } catch (Exception ex) {
                                 LOG.error("Cannot log screen", ex);
                                 jtaResponse.append("Cannot log screen");
-                            } finally {
-                                jpContent.setCursor(Cursor.getDefaultCursor());
                             }
                             jtaResponse.append("\n\n\n");
                             LOG.debug("\n\n");
+
+                            jd.setSize(jd.getBounds().width + 1, jd.getBounds().height + 1);
+                            jd.setSize(jd.getBounds().width - 1, jd.getBounds().height - 1);
                         }
                     };
                     t.start();
-                    try {
-                        t.join();
-                    } catch (InterruptedException ex) {
-                        LOG.error("Cannot take screenshot", ex);
-                    }
                 });
             }
-            jpLog.add(Box.createHorizontalStrut(20));
+            jpLog.add(Box.createHorizontalStrut(38));
             {
                 JButton jbLogMsg = new JButton("Log Message");
                 jpLog.add(jbLogMsg);
@@ -231,6 +238,14 @@ public interface UiAutomationTest {
                         jtMsg.selectAll();
                     }
                 });
+                jtMsg.addKeyListener(new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                            jbLogMsg.doClick();
+                        }
+                    }
+                });
                 jbLogMsg.addActionListener(event -> {
                     Thread t = new Thread(tName) {
                         @Override
@@ -238,6 +253,7 @@ public interface UiAutomationTest {
                             String msg = jtMsg.getText();
                             if (StringUtils.isNotBlank(msg)) {
                                 LOG.info("{}", msg);
+                                jtMsg.selectAll();
                             }
                         }
                     };
@@ -248,6 +264,14 @@ public interface UiAutomationTest {
                         LOG.error("Cannot take screenshot", ex);
                     }
                     jtMsg.requestFocus();
+                });
+            }
+            jpLog.add(Box.createHorizontalStrut(38));
+            {
+                JButton jbClear = new JButton("Clear");
+                jpLog.add(jbClear);
+                jbClear.addActionListener(event -> {
+                    jtaResponse.setText("");
                 });
             }
 
@@ -299,12 +323,12 @@ public interface UiAutomationTest {
             jpb.setString("");
             jpProgress.add(jpb);
 
-            jbLogUi.doClick();
-
             jd.pack();
             jd.setVisible(true);
             jd.setAlwaysOnTop(true);
             jd.setLocationRelativeTo(null);
+
+            jbLogUi.doClick();
 
             ComponentUpdater.install(jpb, 1000, (ActionEvent e) -> {
                 int second = (int) (end - System.currentTimeMillis()) / 1000;
