@@ -27,6 +27,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -76,7 +77,6 @@ public class UiAutomationViewer implements UiAutomationTest {
 
             JPanel jpContent = new JPanel(new BorderLayout());
             jd.setContentPane(jpContent);
-            jpContent.setPreferredSize(new Dimension(468, 128));
             jpContent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
             JPanel jpParameters = new JPanel();
@@ -116,6 +116,12 @@ public class UiAutomationViewer implements UiAutomationTest {
                 jsDebugMinutes.getEditor().setEnabled(false);
                 jp.add(jsDebugMinutes);
             }
+            {
+                JPanel jp = new JPanel();
+                jpParameters.add(jp);
+                jp.setLayout(new BoxLayout(jp, BoxLayout.LINE_AXIS));
+                jp.add(Box.createRigidArea(new Dimension(518, 2)));
+            }
 
             JPanel jpInfo = new JPanel();
             jpContent.add(jpInfo, BorderLayout.PAGE_END);
@@ -135,6 +141,7 @@ public class UiAutomationViewer implements UiAutomationTest {
             });
 
             jd.pack();
+            jd.setResizable(false);
             jd.setAlwaysOnTop(true);
             jd.setLocationRelativeTo(null);
             jd.setVisible(true);
