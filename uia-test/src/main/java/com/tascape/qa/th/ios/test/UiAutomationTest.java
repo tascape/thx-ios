@@ -138,15 +138,16 @@ public interface UiAutomationTest {
             JTextArea jtaResponse = new JTextArea();
             jtaResponse.setEditable(false);
             jtaResponse.setTabSize(4);
+            Font font = jtaResponse.getFont();
+            jtaResponse.setFont(new Font("Courier New", font.getStyle(), font.getSize()));
             JScrollPane jsp = new JScrollPane(jtaResponse);
-            new SmartScroller(jsp);
+            SmartScroller ss = new SmartScroller(jsp);
             jpResponse.add(jsp, BorderLayout.CENTER);
 
             JPanel jpScreen = new JPanel();
             jpScreen.setMinimumSize(new Dimension(200, 200));
             jpScreen.setLayout(new BoxLayout(jpScreen, BoxLayout.PAGE_AXIS));
             JScrollPane jsp1 = new JScrollPane(jpScreen);
-            jsp1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             jpResponse.add(jsp1, BorderLayout.LINE_START);
 
             JPanel jpJs = new JPanel(new BorderLayout());
@@ -154,7 +155,7 @@ public interface UiAutomationTest {
             jpJs.add(new JScrollPane(jtaJs), BorderLayout.CENTER);
 
             JSplitPane jSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jpResponse, jpJs);
-            jSplitPane.setResizeWeight(0.8);
+            jSplitPane.setResizeWeight(0.88);
             jpContent.add(jSplitPane, BorderLayout.CENTER);
 
             JPanel jpLog = new JPanel();
@@ -165,11 +166,12 @@ public interface UiAutomationTest {
             jpLog.add(jcbTap);
             jpLog.add(Box.createHorizontalStrut(8));
 
-            JButton jbLogUi = new JButton("Log UI");
+            JButton jbLogUi = new JButton("Log Main Window");
             jpResponse.add(jpLog, BorderLayout.PAGE_END);
             {
                 jpLog.add(jbLogUi);
                 jbLogUi.addActionListener((ActionEvent event) -> {
+                    jtaResponse.setText("waiting for screenshot...");
                     Thread t = new Thread(tName) {
                         @Override
                         public void run() {
@@ -190,12 +192,13 @@ public interface UiAutomationTest {
 
                                 JLabel jLabel = new JLabel(new ImageIcon(resizedImg));
                                 jpScreen.removeAll();
+                                jsp1.setPreferredSize(new Dimension(w + 30, h));
                                 jpScreen.add(jLabel);
 
                                 jLabel.addMouseListener(new MouseAdapter() {
                                     @Override
                                     public void mouseClicked(MouseEvent e) {
-                                        LOG.debug("clicked {}", e.getPoint());
+                                        LOG.debug("clicked at {},{}", e.getPoint().getX(), e.getPoint().getY());
                                         if (jcbTap.isSelected()) {
                                             device.tap(e.getPoint().x, e.getPoint().y);
                                             jbLogUi.doClick();

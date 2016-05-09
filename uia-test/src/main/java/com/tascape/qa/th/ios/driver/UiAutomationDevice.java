@@ -128,12 +128,12 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
             long end = System.currentTimeMillis() + TIMEOUT_SECOND * 500;
             while (end > System.currentTimeMillis()) {
                 try {
-                    if (this.instruments.runJavaScript("window.logElement();").stream()
-                        .filter(l -> l.contains(UIAWindow.class.getSimpleName())).findAny().isPresent()) {
+                    if (this.instruments.runJavaScript("app.logElement();").stream()
+                        .filter(l -> l.contains(UIAApplication.class.getSimpleName())).findAny().isPresent()) {
                         return;
                     }
                 } catch (Exception ex) {
-                    LOG.warn("cannot log window", ex);
+                    LOG.warn("cannot start app", ex);
                     Thread.sleep(5000);
                 }
             }
@@ -379,6 +379,22 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
             LOG.warn(ex.getMessage());
         }
         return mw();
+    }
+
+    @Override
+    public UIAWindow windows(int index) throws UIAException {
+        long start = System.currentTimeMillis();
+        List<String> lines = runJavaScript("app.windows()[" + index + "].logElementTree();");
+        try {
+            File f = this.saveIntoFile("window-element-tree", "txt", "");
+            FileUtils.writeLines(f, lines);
+        } catch (IOException ex) {
+            LOG.warn(ex.getMessage());
+        }
+        UIAWindow window = UIA.newInstance().parseElementTree(lines);
+        window.setInstruments(instruments);
+        LOG.trace("time {} ms", System.currentTimeMillis() - start);
+        return window;
     }
 
     @Override

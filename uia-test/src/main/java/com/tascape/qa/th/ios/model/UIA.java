@@ -45,6 +45,10 @@ public class UIA {
     }
 
     public UIAWindow parseElementTree(List<String> elementTree) throws UIAException {
+        return this.parseElementTree(0, elementTree);
+    }
+
+    public UIAWindow parseElementTree(int index, List<String> elementTree) throws UIAException {
         while (!elementTree.get(0).startsWith(UIAWindow.class.getSimpleName())) {
             elementTree.remove(0);
         }
@@ -59,6 +63,7 @@ public class UIA {
         if (window == null) {
             throw new UIAException("Cannot parse element tree, no UIAWindow found");
         }
+        window.setIndex(index);
         if (!elementTree.isEmpty()) {
             parseElements(window, elementTree.subList(0, elementTree.size()));
         }

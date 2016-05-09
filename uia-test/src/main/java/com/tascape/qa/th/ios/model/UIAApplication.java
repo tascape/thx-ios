@@ -25,8 +25,9 @@ public interface UIAApplication {
 
     UIAWindow mainWindow() throws UIAException;
 
-//    String bundleID() throws UIAException;
+    UIAWindow windows(int index) throws UIAException;
 
+//    String bundleID() throws UIAException;
     UIAKeyboard keyboard() throws UIAException;
 
 //    String version() throws UIAException;

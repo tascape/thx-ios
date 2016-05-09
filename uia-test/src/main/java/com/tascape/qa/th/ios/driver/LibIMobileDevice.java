@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
 class LibIMobileDevice extends EntityDriver {
     private static final Logger LOG = LoggerFactory.getLogger(LibIMobileDevice.class);
 
-    public static final int DEVICE_DETECTION_TIMEOUT_MS = 3000;
+    public static final int DEVICE_DETECTION_TIMEOUT_MS = 2000;
 
     public static final String SYSPROP_UUIDS = "qa.th.driver.ios.UUIDS";
 

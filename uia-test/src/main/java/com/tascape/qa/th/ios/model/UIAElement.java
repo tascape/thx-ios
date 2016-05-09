@@ -445,7 +445,13 @@ public class UIAElement {
             list.add(0, "elements()[" + element.index() + "]");
             element = element.parent();
         }
-        list.add(0, "window");
+        UIAWindow window = (UIAWindow) element;
+        if (window.index() == 0) {
+            list.add(0, "window");
+        } else {
+            list.add(0, "windows()[" + window.index() + "]");
+            list.add(0, "app");
+        }
         return StringUtils.join(list, ".");
     }
 
