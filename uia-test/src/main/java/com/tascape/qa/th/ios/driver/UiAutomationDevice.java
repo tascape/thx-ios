@@ -391,7 +391,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         } catch (IOException ex) {
             LOG.warn(ex.getMessage());
         }
-        UIAWindow window = UIA.newInstance().parseElementTree(lines);
+        UIAWindow window = UIA.newInstance().parseElementTree(index, lines);
         window.setInstruments(instruments);
         LOG.trace("time {} ms", System.currentTimeMillis() - start);
         return window;
