@@ -17,8 +17,8 @@ package com.tascape.qa.th.ios.tools;
 
 import com.alee.laf.WebLookAndFeel;
 import com.tascape.qa.th.SystemConfiguration;
+import com.tascape.qa.th.ios.driver.App;
 import com.tascape.qa.th.ios.driver.UiAutomationDevice;
-import com.tascape.qa.th.ios.test.UiAutomationTest;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -50,12 +50,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author linsong wang
  */
-public class UiAutomationViewer implements UiAutomationTest {
+public class UiAutomationViewer extends App {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UiAutomationViewer.class);
 
-    private UiAutomationDevice device;
-
-    private String appName = "Movies";
+    private String appName = "APP_NAME";
 
     private int debugMinutes = 30;
 
@@ -69,7 +67,27 @@ public class UiAutomationViewer implements UiAutomationTest {
 
     private final JTextField jtfApp = new JTextField();
 
-    private void initDevice() throws Exception {
+    @Override
+    public String getBundleId() {
+        return "";
+    }
+
+    @Override
+    public int getLaunchDelayMillis() {
+        return 5000;
+    }
+
+    @Override
+    public String getName() {
+        return this.jtfApp.getText();
+    }
+
+    @Override
+    public void reset() throws Exception {
+        LOG.debug("na");
+    }
+
+    private void start() throws Exception {
         SwingUtilities.invokeLater(() -> {
             WebLookAndFeel.install();
             jd = new JDialog((JFrame) null, "Launch iOS App");
@@ -135,7 +153,7 @@ public class UiAutomationViewer implements UiAutomationTest {
                 new Thread() {
                     @Override
                     public void run() {
-                        launch();
+                        launchApp();
                     }
                 }.start();
             });
@@ -171,22 +189,24 @@ public class UiAutomationViewer implements UiAutomationTest {
         }
     }
 
-    private void launch() {
+    private void launchApp() {
         try {
             jd.setCursor(new Cursor(Cursor.WAIT_CURSOR));
             device = new UiAutomationDevice((String) this.jcbDevices.getSelectedItem());
-            device.start(this.jtfApp.getText(), 5000);
+            this.setDevice(device);
+            this.launch();
         } catch (Throwable ex) {
             LOG.error("Error", ex);
-            jd.setCursor(Cursor.getDefaultCursor());
             JOptionPane.showMessageDialog(jbLaunch.getTopLevelAncestor(), "Cannot start app");
             return;
+        } finally {
+            jd.setCursor(Cursor.getDefaultCursor());
         }
 
         debugMinutes = (int) jsDebugMinutes.getValue();
         jd.dispose();
         try {
-            this.testManually(device, debugMinutes);
+            this.interactManually(debugMinutes);
         } catch (Throwable ex) {
             LOG.error("Error", ex);
             System.exit(1);
@@ -195,21 +215,17 @@ public class UiAutomationViewer implements UiAutomationTest {
     }
 
     public static void main(String[] args) {
-        String instruction = "Usage:\n"
-            + "java -cp $YOUR_CLASSPATH com.tascape.qa.th.ios.tools.UiAutomationDebugger APP_NAME";
-        LOG.info("--------\n{}", instruction);
-
         SystemConfiguration.getInstance();
-        UiAutomationViewer debugger = new UiAutomationViewer();
+        UiAutomationViewer viewer = new UiAutomationViewer();
 
         if (args.length > 0) {
-            debugger.appName = args[0];
+            viewer.appName = args[0];
         }
 
         try {
-            debugger.initDevice();
+            viewer.start();
         } catch (Throwable ex) {
-            LOG.error("", ex);
+            LOG.error("fail to acquire device", ex);
             System.exit(1);
         }
     }

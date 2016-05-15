@@ -108,12 +108,12 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
      * Launches app by name, and verifies the main widown is on screen.
      *
      * @param appName     app name
-     * @param retries     number of retries of instruments command
+     * @param tries       number of tries of instruments command
      * @param delayMillis wait for app to start
      *
      * @throws Exception if app does not launch
      */
-    public void start(String appName, int retries, int delayMillis) throws Exception {
+    public void start(String appName, int tries, int delayMillis) throws Exception {
         if (instruments != null) {
             instruments.disconnect();
         } else {
@@ -122,7 +122,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
         if (StringUtils.isNotEmpty(alertHandler)) {
             instruments.setPreTargetJavaScript(alertHandler);
         }
-        for (int i = 0; i < retries; i++) {
+        for (int i = 0; i < tries; i++) {
             instruments.connect();
             Utils.sleep(delayMillis, "Wait for app to start");
             long end = System.currentTimeMillis() + TIMEOUT_SECOND * 500;

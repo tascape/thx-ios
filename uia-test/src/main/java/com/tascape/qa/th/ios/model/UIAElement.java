@@ -410,7 +410,7 @@ public class UIAElement {
     }
 
     public void tap() {
-        instruments.runJavaScript(toJavaScript() + ".tap()");
+        instruments.runJavaScript(toJavaScript() + ".tap();");
     }
 
     public void tap(int times) {
@@ -424,7 +424,7 @@ public class UIAElement {
      * @throws UIAException in case of Instruments error
      */
     public void tapOn() {
-        instruments.runJavaScript("target.tap({x:" + center.x + ", y:" + center.y + "})");
+        instruments.runJavaScript("target.tap({x:" + center.x + ", y:" + center.y + "});");
     }
 
     public void drag(float x, float y) {
