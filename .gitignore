@@ -12,4 +12,5 @@
 hs_err_pid*
 nb*.xml
 /target/
-/nailgun-server/target/
+/logs/
+

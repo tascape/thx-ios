@@ -328,7 +328,6 @@ public interface UiAutomationTest {
 
             jd.pack();
             jd.setVisible(true);
-            jd.setAlwaysOnTop(true);
             jd.setLocationRelativeTo(null);
 
             jbLogUi.doClick();
