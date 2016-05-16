@@ -20,7 +20,6 @@ import com.alee.laf.progressbar.WebProgressBar;
 import com.alee.utils.swing.ComponentUpdater;
 import com.tascape.qa.th.driver.EntityDriver;
 import com.tascape.qa.th.ios.model.UIAException;
-import com.tascape.qa.th.ios.test.UiAutomationTest;
 import com.tascape.qa.th.ui.SmartScroller;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -66,7 +65,7 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("ProtectedField")
 public abstract class App extends EntityDriver {
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(App.class);
+    private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
     protected UiAutomationDevice device;
 
@@ -120,8 +119,6 @@ public abstract class App extends EntityDriver {
      * @throws Exception if case of error
      */
     public void interactManually(int timeoutMinutes) throws Exception {
-        final Logger LOG = LoggerFactory.getLogger(UiAutomationTest.class);
-
         LOG.info("Start manual UI interaction");
         long end = System.currentTimeMillis() + timeoutMinutes * 60000L;
 
