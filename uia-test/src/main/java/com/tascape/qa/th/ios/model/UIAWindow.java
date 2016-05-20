@@ -32,6 +32,18 @@ public class UIAWindow extends UIAElement {
     }
 
     /**
+     * Finds UI element recursively. Using default name "(null)".
+     *
+     * @param <T>  type of element
+     * @param type type of element
+     *
+     * @return element found, or null
+     */
+    public <T extends UIAElement> T findElement(Class<T> type) {
+        return this.findElement(type, "(null)");
+    }
+
+    /**
      * Finds UI element recursively.
      *
      * @param <T>  type of element
