@@ -32,7 +32,7 @@ public class UIAWindow extends UIAElement {
     }
 
     /**
-     * Finds UI element recursively. Using default name "(null)".
+     * Finds UI element recursively of the first appearance.
      *
      * @param <T>  type of element
      * @param type type of element
@@ -40,7 +40,7 @@ public class UIAWindow extends UIAElement {
      * @return element found, or null
      */
     public <T extends UIAElement> T findElement(Class<T> type) {
-        return this.findElement(type, "(null)");
+        return this.findElement(type, null);
     }
 
     /**
@@ -54,7 +54,7 @@ public class UIAWindow extends UIAElement {
      */
     @Override
     public <T extends UIAElement> T findElement(Class<T> type, String name) {
-        LOG.debug("Look for {}['{}']", type.getSimpleName(), name);
+        LOG.debug("Look for {}{}", type.getSimpleName(), name == null ? "" : "['" + name + "']");
         return type.cast(super.findElement(type, name));
     }
 

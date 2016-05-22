@@ -375,7 +375,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     public UIAWindow mainWindow() {
         try {
             return mw();
-        } catch (UIAException ex) {
+        } catch (Exception ex) {
             LOG.warn(ex.getMessage());
         }
         return mw();

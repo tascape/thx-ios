@@ -504,7 +504,7 @@ public class UIAElement {
     }
 
     <T extends UIAElement> T findElement(Class<T> type, String name) {
-        if (type.equals(this.getClass()) && this.name().equals(name)) {
+        if (type.equals(this.getClass()) && (name == null || this.name().equals(name))) {
             return type.cast(this);
         }
         for (UIAElement element : elements) {
