@@ -93,6 +93,8 @@ public abstract class App extends EntityDriver {
     }
 
     public void launch() throws Exception {
+        device.getDebugService().killApp(this.getBundleId());
+        
         device.setAlertAutoDismiss();
         device.start(this.getName(), getLaunchTries(), getLaunchDelayMillis());
     }
