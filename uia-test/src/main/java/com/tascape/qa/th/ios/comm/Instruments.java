@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -80,7 +81,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     public static final int JAVASCRIPT_TIMEOUT_SECOND
         = SystemConfiguration.getInstance().getIntProperty(SYSPROP_JS_TIMEOUT_SECOND, 120);
 
-    private static final String INSTRUMENTS_POISON = UUID.randomUUID().toString();
+    private final String INSTRUMENTS_POISON = "POISON-" + UUID.randomUUID().toString();
 
     static {
         Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new CacheCleaner(), 0, 15, TimeUnit.MINUTES);
@@ -92,7 +93,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
 
     private int ngPort;
 
-    private int rmiPort;
+    private int rmiPort = 38998;
 
     private NGServer ngServer;
 
@@ -158,13 +159,9 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     }
 
     public List<String> runJavaScript(String javaScript) {
-        return this.runJavaScript(javaScript, true);
-    }
-
-    public List<String> runJavaScript(String javaScript, boolean debug) {
         if (responseQueue.contains(INSTRUMENTS_POISON)) {
             responseQueue.clear();
-            throw new UIAException("Instruments error");
+            throw new UIAException("Instruments start error");
         }
         responseQueue.clear();
         String reqId = UUID.randomUUID().toString();
@@ -217,10 +214,6 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             if (res.contains(INSTRUMENTS_ERROR) || res.contains(APP_DEAD)) {
                 LOG.error(res);
                 break;
-            } else if (debug) {
-                LOG.debug(res);
-            } else {
-                LOG.trace(res);
             }
         }
         javaScriptQueue.clear();
@@ -268,17 +261,17 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         return ngs;
     }
 
-    private Server startRmiServer() throws IOException, LipeRMIException {
+    private Server startRmiServer() throws IOException, LipeRMIException, InterruptedException {
         Server rmis = new Server();
         CallHandler callHandler = new CallHandler();
-        this.rmiPort = 8000;
         while (true) {
             try {
                 rmis.bind(rmiPort, callHandler);
                 break;
             } catch (IOException ex) {
                 LOG.trace("rmi port {} - {}", this.rmiPort, ex.getMessage());
-                this.rmiPort += 7;
+                this.rmiPort += 1;
+                Utils.sleep(new Random().nextInt(50) + 50L, "wait to try port" + rmiPort);
             }
         }
         LOG.trace("rmi port {}", this.rmiPort);
@@ -324,7 +317,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
         cmdLine.addArgument("-e");
         cmdLine.addArgument("UIARESULTSPATH");
         cmdLine.addArgument(uiaResultsPath.toFile().getAbsolutePath());
-        LOG.trace("{}", cmdLine.toString());
+        LOG.trace("{}", cmdLine);
         ExecuteWatchdog watchdog = new ExecuteWatchdog(Long.MAX_VALUE);
         Executor executor = new DefaultExecutor();
         executor.setWatchdog(watchdog);
@@ -336,9 +329,8 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
     }
 
     private static final List<String> START_ERRORS = Lists.newArrayList(new String[]{
-        "Target failed to run: Device is currently locked with a passcode.",
-        "Instruments Usage Error : Specified target process is invalid:",
-        "Fail: The target application appears to have died"
+        "Target failed to run:",
+        "Instruments Usage Error:" //        "Fail: The target application appears to have died"
     });
 
     private static final List<String> WARNINGS = Lists.newArrayList(new String[]{
@@ -351,7 +343,6 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
 
         @Override
         public void setProcessInputStream(OutputStream out) throws IOException {
-            LOG.trace("setProcessInputStream");
         }
 
         @Override
@@ -394,12 +385,10 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
 
         @Override
         public void start() throws IOException {
-            LOG.trace("start");
         }
 
         @Override
         public void stop() {
-            LOG.trace("stop");
         }
 
         private boolean isErrorToStart(String line) {

@@ -160,7 +160,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
     }
 
     public List<String> loadElementTree() {
-        return instruments.runJavaScript("window.logElementTree();", false);
+        return instruments.runJavaScript("window.logElementTree();");
     }
 
     /**
@@ -404,7 +404,7 @@ public class UiAutomationDevice extends LibIMobileDevice implements UIATarget, U
 
     @Override
     public void captureScreenWithName(String imageName) {
-        instruments.runJavaScript("target.captureScreenWithName('" + imageName + "');", false);
+        instruments.runJavaScript("target.captureScreenWithName('" + imageName + "');");
     }
 
     @Override

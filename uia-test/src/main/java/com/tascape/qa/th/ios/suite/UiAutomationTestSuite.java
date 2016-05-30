@@ -16,6 +16,7 @@
 package com.tascape.qa.th.ios.suite;
 
 import com.tascape.qa.th.ios.driver.UiAutomationDevice;
+import com.tascape.qa.th.ios.model.UIAException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +33,11 @@ public interface UiAutomationTestSuite {
         = new ArrayBlockingQueue<>(UiAutomationDevice.getAllDevices().size(), true, UiAutomationDevice.getAllDevices());
 
     default UiAutomationDevice getAvailableDevice() throws SDKException, InterruptedException {
-        return DEVICES.poll(10, TimeUnit.SECONDS);
+        UiAutomationDevice device = DEVICES.poll(1, TimeUnit.SECONDS);
+        if (device == null) {
+            throw new UIAException("Cannot find a device available");
+        }
+        return device;
     }
 
     default int getNumberOfDevices() {
