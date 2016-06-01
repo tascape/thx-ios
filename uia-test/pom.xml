@@ -20,6 +20,12 @@
     <dependencies>
         <dependency>
             <groupId>com.tascape.qa</groupId>
+            <artifactId>testharness</artifactId>
+            <version>1.1.9</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.tascape.qa</groupId>
             <artifactId>thx-ios-libimobiledevice</artifactId>
             <version>1.1.1</version>
             <type>jar</type>
@@ -34,12 +40,6 @@
             <groupId>com.tascape.qa</groupId>
             <artifactId>th-lipermi</artifactId>
             <version>1.0.0</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.tascape.qa</groupId>
-            <artifactId>testharness</artifactId>
-            <version>[1.1.7, 1.2.0)</version>
             <type>jar</type>
         </dependency>
         <dependency>
