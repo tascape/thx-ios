@@ -15,9 +15,6 @@
  */
 package com.tascape.qa.th.ios.driver;
 
-import com.alee.laf.WebLookAndFeel;
-import com.alee.laf.progressbar.WebProgressBar;
-import com.alee.utils.swing.ComponentUpdater;
 import com.tascape.qa.th.driver.EntityDriver;
 import com.tascape.qa.th.ios.model.UIAException;
 import com.tascape.qa.th.ui.SmartScroller;
@@ -36,6 +33,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -54,6 +52,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -94,7 +93,7 @@ public abstract class App extends EntityDriver {
 
     public void launch() throws Exception {
         device.getDebugService().killApp(this.getBundleId());
-        
+
         device.setAlertAutoDismiss();
         device.start(this.getName(), getLaunchTries(), getLaunchDelayMillis());
     }
@@ -128,8 +127,8 @@ public abstract class App extends EntityDriver {
         AtomicBoolean pass = new AtomicBoolean(false);
         String tName = Thread.currentThread().getName() + "m";
         SwingUtilities.invokeLater(() -> {
-            WebLookAndFeel.install();
-            JDialog jd = new JDialog((JFrame) null, "Manual Device UI Interaction");
+            String info = device.getProductDetail() + "" + device.getUuid();
+            JDialog jd = new JDialog((JFrame) null, "Manual Device UI Interaction - " + info);
             jd.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
             JPanel jpContent = new JPanel(new BorderLayout());
@@ -155,7 +154,6 @@ public abstract class App extends EntityDriver {
                 JButton jb = new JButton("FAIL");
                 jb.setForeground(Color.red);
                 jb.setFont(jb.getFont().deriveFont(Font.BOLD));
-                jpInfo.add(jb);
                 jpInfo.add(jb, BorderLayout.LINE_END);
                 jb.addActionListener(event -> {
                     pass.set(false);
@@ -164,8 +162,29 @@ public abstract class App extends EntityDriver {
                 });
             }
 
-            JLabel jlInfo = new JLabel(device.getProductDetail() + "" + device.getUuid(), SwingConstants.CENTER);
-            jpInfo.add(jlInfo, BorderLayout.CENTER);
+            JLabel jlTimeout = new JLabel("xxx seconds left", SwingConstants.CENTER);
+            jpInfo.add(jlTimeout, BorderLayout.CENTER);
+            jpInfo.add(jlTimeout, BorderLayout.CENTER);
+            new SwingWorker<Long, Long>() {
+                @Override
+                protected Long doInBackground() throws Exception {
+                    while (System.currentTimeMillis() < end) {
+                        Thread.sleep(1000);
+                        long left = (end - System.currentTimeMillis()) / 1000;
+                        this.publish(left);
+                    }
+                    return 0L;
+                }
+
+                @Override
+                protected void process(List<Long> chunks) {
+                    Long l = chunks.get(chunks.size() - 1);
+                    jlTimeout.setText(l + " seconds left");
+                    if (l < 850) {
+                        jlTimeout.setForeground(Color.red);
+                    }
+                }
+            }.execute();
 
             JPanel jpResponse = new JPanel(new BorderLayout());
             JPanel jpProgress = new JPanel(new BorderLayout());
@@ -355,31 +374,11 @@ public abstract class App extends EntityDriver {
                 });
             }
 
-            WebProgressBar jpb = new WebProgressBar(0, timeoutMinutes * 60);
-            jpb.setIndeterminate(true);
-            jpb.setIndeterminate(false);
-            jpb.setStringPainted(true);
-            jpb.setString("");
-            jpProgress.add(jpb);
-
             jd.pack();
             jd.setVisible(true);
             jd.setLocationRelativeTo(null);
 
             jbLogUi.doClick();
-
-            ComponentUpdater.install(jpb, 1000, (ActionEvent e) -> {
-                int second = (int) (end - System.currentTimeMillis()) / 1000;
-                jpb.setValue(second);
-                jpb.setString(second + " seconds left");
-                if (second < 60) {
-                    jpb.setForeground(Color.red);
-                } else if (second < 300) {
-                    jpb.setForeground(Color.blue);
-                } else {
-                    jpb.setForeground(Color.green.darker());
-                }
-            });
         });
 
         while (visible.get()) {

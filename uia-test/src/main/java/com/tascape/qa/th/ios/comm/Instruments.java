@@ -41,6 +41,7 @@ import net.sf.lipermi.handler.CallHandler;
 import net.sf.lipermi.net.Server;
 import com.tascape.qa.th.ios.model.UIAException;
 import com.tascape.qa.th.libx.DefaultExecutor;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -298,7 +299,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             .append("  }\n")
             .append("}\n");
         File js = File.createTempFile("instruments-", ".js");
-        FileUtils.write(js, sb);
+        FileUtils.write(js, sb, Charset.defaultCharset());
         LOG.trace("{}\n{}", js, sb);
 
         uiaResultsPath.toFile().mkdirs();

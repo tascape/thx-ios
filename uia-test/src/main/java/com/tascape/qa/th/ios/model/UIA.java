@@ -16,6 +16,7 @@
 package com.tascape.qa.th.ios.model;
 
 import java.awt.geom.Rectangle2D;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -208,7 +209,8 @@ public class UIA {
     public static void main(String[] args) throws Exception {
         UIA uia = UIA.newInstance();
         {
-            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree.txt"));
+            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree.txt"),
+                Charset.defaultCharset());
             UIAWindow w = uia.parseElementTree(elementTree);
             LOG.debug("element tree\n{}", w);
             LOG.debug("json\n{}", w.toJson().toString(2));
@@ -223,12 +225,14 @@ public class UIA {
             }
         }
         {
-            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree-0.txt"));
+            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree-0.txt"),
+                Charset.defaultCharset());
             UIAWindow w = uia.parseElementTree(elementTree);
             LOG.debug(w.toJson().toString(2));
         }
         {
-            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree-1.txt"));
+            List<String> elementTree = IOUtils.readLines(UIA.class.getResourceAsStream("element-tree-1.txt"),
+                Charset.defaultCharset());
             UIAWindow w = uia.parseElementTree(elementTree);
             LOG.debug(w.toJson().toString(2));
         }

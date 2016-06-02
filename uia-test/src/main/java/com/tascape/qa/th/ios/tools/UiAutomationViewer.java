@@ -15,11 +15,10 @@
  */
 package com.tascape.qa.th.ios.tools;
 
-import com.alee.laf.WebLookAndFeel;
 import com.tascape.qa.th.SystemConfiguration;
 import com.tascape.qa.th.ios.driver.App;
 import com.tascape.qa.th.ios.driver.UiAutomationDevice;
-import java.awt.BorderLayout;
+import com.tascape.qa.th.ui.ViewerParameterDialog;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -33,8 +32,6 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -55,15 +52,13 @@ public class UiAutomationViewer extends App {
 
     private String appName = "APP_NAME";
 
-    private int debugMinutes = 30;
-
-    private JDialog jd;
+    private ViewerParameterDialog jd;
 
     private final JButton jbLaunch = new JButton("Launch");
 
     private final JComboBox<String> jcbDevices = new JComboBox<>(new String[]{"detecting devices..."});
 
-    private final JSpinner jsDebugMinutes = new JSpinner(new SpinnerNumberModel(30, 15, 180, 15));
+    private final JSpinner jsDebugMinutes = new JSpinner(new SpinnerNumberModel(180, 15, 180, 15));
 
     private final JTextField jtfApp = new JTextField();
 
@@ -89,17 +84,11 @@ public class UiAutomationViewer extends App {
 
     private void start() throws Exception {
         SwingUtilities.invokeLater(() -> {
-            WebLookAndFeel.install();
-            jd = new JDialog((JFrame) null, "Launch iOS App");
-            jd.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-            JPanel jpContent = new JPanel(new BorderLayout());
-            jd.setContentPane(jpContent);
-            jpContent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            jd = new ViewerParameterDialog("Launch iOS App");
 
             JPanel jpParameters = new JPanel();
             jpParameters.setLayout(new BoxLayout(jpParameters, BoxLayout.PAGE_AXIS));
-            jpContent.add(jpParameters, BorderLayout.CENTER);
+            jd.setParameterPanel(jpParameters);
             {
                 JPanel jp = new JPanel();
                 jpParameters.add(jp);
@@ -141,14 +130,14 @@ public class UiAutomationViewer extends App {
                 jp.add(Box.createRigidArea(new Dimension(518, 2)));
             }
 
-            JPanel jpInfo = new JPanel();
-            jpContent.add(jpInfo, BorderLayout.PAGE_END);
-            jpInfo.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
-            jpInfo.setLayout(new BoxLayout(jpInfo, BoxLayout.LINE_AXIS));
+            JPanel jpAction = new JPanel();
+            jd.setActionPanel(jpAction);;
+            jpAction.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+            jpAction.setLayout(new BoxLayout(jpAction, BoxLayout.LINE_AXIS));
             jbLaunch.setFont(jbLaunch.getFont().deriveFont(Font.BOLD));
             jbLaunch.setBorder(BorderFactory.createEtchedBorder());
             jbLaunch.setEnabled(false);
-            jpInfo.add(jbLaunch);
+            jpAction.add(jbLaunch);
             jbLaunch.addActionListener(event -> {
                 new Thread() {
                     @Override
@@ -158,11 +147,7 @@ public class UiAutomationViewer extends App {
                 }.start();
             });
 
-            jd.pack();
-            jd.setResizable(false);
-            jd.setAlwaysOnTop(true);
-            jd.setLocationRelativeTo(null);
-            jd.setVisible(true);
+            jd.showDialog();
 
             new Thread() {
                 @Override
@@ -203,7 +188,7 @@ public class UiAutomationViewer extends App {
             jd.setCursor(Cursor.getDefaultCursor());
         }
 
-        debugMinutes = (int) jsDebugMinutes.getValue();
+        int debugMinutes = (int) jsDebugMinutes.getValue();
         jd.dispose();
         try {
             this.interactManually(debugMinutes);

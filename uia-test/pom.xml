@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.tascape.qa</groupId>
     <artifactId>thx-ios-uiat</artifactId>
-    <version>1.1.12</version>
+    <version>1.1.13</version>
     <packaging>jar</packaging>
 
     <name>thx-ios-uiat</name>
@@ -40,24 +40,6 @@
             <groupId>com.tascape.qa</groupId>
             <artifactId>th-lipermi</artifactId>
             <version>1.0.0</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>de.sciss</groupId>
-            <artifactId>weblaf-core</artifactId>
-            <version>1.28</version>
-            <type>jar</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-simple</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>de.sciss</groupId>
-            <artifactId>weblaf-ui</artifactId>
-            <version>1.28</version>
             <type>jar</type>
         </dependency>
     </dependencies>
