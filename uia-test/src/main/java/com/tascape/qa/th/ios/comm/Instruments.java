@@ -218,8 +218,9 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             }
         }
         javaScriptQueue.clear();
-        if (lines.stream().filter(l -> l.contains(INSTRUMENTS_ERROR) || l.contains(APP_DEAD)).findAny().isPresent()) {
-            throw new UIAException("instruments error");
+        Stream<String> err = lines.stream().filter(l -> l.contains(INSTRUMENTS_ERROR) || l.contains(APP_DEAD));
+        if (err.findAny().isPresent()) {
+            throw new UIAException("instruments error " + err);
         }
         return lines;
     }
@@ -272,7 +273,7 @@ public class Instruments extends EntityCommunication implements JavaScriptServer
             } catch (IOException ex) {
                 LOG.trace("rmi port {} - {}", this.rmiPort, ex.getMessage());
                 this.rmiPort += 1;
-                Utils.sleep(new Random().nextInt(50) + 50L, "wait to try port" + rmiPort);
+                Utils.sleep(new Random().nextInt(200) + 100L, "wait to try port " + rmiPort);
             }
         }
         LOG.trace("rmi port {}", this.rmiPort);
