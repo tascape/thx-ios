@@ -16,13 +16,16 @@
 package com.tascape.qa.th.ios.driver;
 
 import com.tascape.qa.th.driver.EntityDriver;
+import com.tascape.qa.th.ios.model.UIAElement;
 import com.tascape.qa.th.ios.model.UIAException;
-import com.tascape.qa.th.ui.SmartScroller;
+import com.tascape.qa.th.ios.model.UIAWindow;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
@@ -48,11 +51,17 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -195,9 +204,14 @@ public abstract class App extends EntityDriver {
             jtaResponse.setTabSize(4);
             Font font = jtaResponse.getFont();
             jtaResponse.setFont(new Font("Courier New", font.getStyle(), font.getSize()));
-            JScrollPane jsp = new JScrollPane(jtaResponse);
-            SmartScroller ss = new SmartScroller(jsp);
-            jpResponse.add(jsp, BorderLayout.CENTER);
+
+            JTabbedPane jtp = new JTabbedPane();
+            JTree jtView = new JTree();
+            jtView.setVisible(false);
+            jtView.setCellRenderer(new UIAElementCellRenderer());
+            jtp.add("tree", new JScrollPane(jtView));
+            jtp.add("text", new JScrollPane(new JScrollPane(jtaResponse)));
+            jpResponse.add(jtp, BorderLayout.CENTER);
 
             JPanel jpScreen = new JPanel();
             jpScreen.setMinimumSize(new Dimension(200, 200));
@@ -232,6 +246,7 @@ public abstract class App extends EntityDriver {
                         public void run() {
                             LOG.debug("\n\n");
                             try {
+
                                 File png = device.takeDeviceScreenshot();
                                 BufferedImage image = ImageIO.read(png);
 
@@ -260,12 +275,17 @@ public abstract class App extends EntityDriver {
                                         }
                                     }
                                 });
+
+                                UIAWindow window = device.mainWindow();
+                                jtView.setModel(getModel(window));
+                                jtView.setVisible(true);
                                 jtaResponse.setText("");
-                                device.mainWindow().logElement().forEach(line -> {
+                                window.logElement().forEach(line -> {
                                     LOG.debug(line);
                                     jtaResponse.append(line);
                                     jtaResponse.append("\n");
                                 });
+
                             } catch (Exception ex) {
                                 LOG.error("Cannot log screen", ex);
                                 jtaResponse.append("Cannot log screen");
@@ -393,6 +413,37 @@ public abstract class App extends EntityDriver {
             LOG.info("Manual UI Interaction returns PASS");
         } else {
             Assert.fail("Manual UI Interaction returns FAIL");
+        }
+    }
+
+    private TreeModel getModel(UIAWindow window) {
+        DefaultMutableTreeNode rootNode = createNode(window);
+        DefaultTreeModel treeModel = new DefaultTreeModel(rootNode);
+        return treeModel;
+    }
+
+    private DefaultMutableTreeNode createNode(UIAElement element) {
+        DefaultMutableTreeNode node = new DefaultMutableTreeNode(element);
+        for (UIAElement e : element.elements()) {
+            node.add(createNode(e));
+        }
+        return node;
+    }
+
+    private static class UIAElementCellRenderer extends DefaultTreeCellRenderer {
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded,
+            boolean leaf, int row, boolean hasFocus) {
+            Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+            Object uo = ((DefaultMutableTreeNode) value).getUserObject();
+            if (uo instanceof UIAElement) {
+                UIAElement element = (UIAElement) uo;
+                Rectangle.Float rect = element.rect();
+                String s = element.getClass().getSimpleName() + " " + element.name() + " "
+                    + String.format("[%s,%s,%s,%s]", rect.x, rect.y, rect.width, rect.height);
+                this.setText(s);
+            }
+            return this;
         }
     }
 }
