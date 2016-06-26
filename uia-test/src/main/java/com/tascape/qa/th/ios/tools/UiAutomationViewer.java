@@ -50,9 +50,9 @@ import org.slf4j.LoggerFactory;
 public class UiAutomationViewer extends App {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UiAutomationViewer.class);
 
-    private String appName = "APP_NAME";
+    private String appName = "";
 
-    private ViewerParameterDialog jd;
+    private final ViewerParameterDialog jd = new ViewerParameterDialog("Launch iOS App");
 
     private final JButton jbLaunch = new JButton("Launch");
 
@@ -84,8 +84,6 @@ public class UiAutomationViewer extends App {
 
     private void start() throws Exception {
         SwingUtilities.invokeLater(() -> {
-            jd = new ViewerParameterDialog("Launch iOS App");
-
             JPanel jpParameters = new JPanel();
             jpParameters.setLayout(new BoxLayout(jpParameters, BoxLayout.PAGE_AXIS));
             jd.setParameterPanel(jpParameters);
@@ -102,6 +100,7 @@ public class UiAutomationViewer extends App {
                 jp.setLayout(new BoxLayout(jp, BoxLayout.LINE_AXIS));
                 jp.add(new JLabel("App Name"));
                 jp.add(jtfApp);
+                jtfApp.setToolTipText("name of app-under-test");
                 if (StringUtils.isNotEmpty(appName)) {
                     jtfApp.setText(appName);
                 }
@@ -156,6 +155,10 @@ public class UiAutomationViewer extends App {
                         detectDevices();
                     } catch (SDKException | InterruptedException ex) {
                         throw new RuntimeException(ex);
+                    }
+
+                    if (jcbDevices.getItemCount() == 1 && StringUtils.isNotBlank(jtfApp.getText())) {
+                        jbLaunch.doClick();
                     }
                 }
             }.start();
